@@ -8,12 +8,14 @@
 #include "stringMapper.h"
 #include "utils.h"
 
-typedef struct ProductionRule {
+typedef struct ProductionRule ProductionRule;
+
+struct ProductionRule {
     symbol nonTerminal;
     int num_symbol;
     symbol *production;
-    struct ProductionRule *next;
-} symbolArray;
+    ProductionRule *next;
+};
 
 extern ProductionRule *productions;
 

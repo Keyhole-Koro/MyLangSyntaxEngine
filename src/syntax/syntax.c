@@ -8,7 +8,7 @@ int max_size_syntax = 32;
 ProductionRule *prod_rules;
 
 static ProductionRule *constructRule(symbol left, symbol *right, int size_right);
-static void registerSyntax(symbol left, symbol *right, int size_right);
+static void registerSyntax(symbol left, symbol *right, int num_symbol);
 symbol *processRightBuffer(Token *cur, int *len_right, Token **rest);
 
 void processSyntaxTxt(char *file_path) {
@@ -30,20 +30,19 @@ void processSyntaxTxt(char *file_path) {
     }
 
     symbol left = 0;
-    int size_right = 0;
-    symbol *right;
     Token *rest = NULL;
 
+    printf("n\n");
     // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
         Token *next = current->next;
         if (current->kind == NON_TERMINAL && next->kind == COLON) {
-            left = StringMapping(current->value, non_terminal);
+            left = mapString(current->value, non_terminal);
             continue;
         } else if (current->kind == COLON || current->kind == PIPE) {
             int len_right = 0;
-            symbol *right_buffer = processRightBuffer(next, &len_right, &rest);
-            registerSyntax(left, right_buffer, len_right);
+            symbol *right = processRightBuffer(next, &len_right, &rest);
+            registerSyntax(left, right, len_right);
             current = rest;
             continue;
         }
@@ -65,7 +64,8 @@ static ProductionRule *constructRule(symbol left, symbol *right, int size_right)
     return rule;
 }
 
-static void registerSyntax(ProductionRule *newRule) {
+static void registerSyntax(symbol left, symbol *right, int num_symbol) {
+    ProductionRule *newRule = constructRule(left, right, num_symbol);
     if (prod_rules == NULL) {
         prod_rules = newRule;
     } else {
@@ -81,8 +81,9 @@ symbol *processRightBuffer(Token *cur, int *len_right, Token **rest) {
     int size_right = 10;
     int num_tk = 0;
     symbol *newRight = malloc(size_right * sizeof(symbol));
-    for (Token *current = cur; current; current = current->next) {
-        if (current->kind != TERMINAL || current->kind != NON_TERMINAL) continue;
+    Token *current;
+    for (current = cur; current; current = current->next) {
+        if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
         newRight[num_tk++] = current->kind == TERMINAL ? 
             mapString(current->value, true) : mapString(current->value, false);
     }
@@ -95,7 +96,7 @@ symbol *processRightBuffer(Token *cur, int *len_right, Token **rest) {
 
 void showProductionRules() {
     ProductionRule *current = prod_rules;
-    while (current != NULL) {
+    for (; current; current = current->next) {
         printf("----\n");
         printf("nonTerminal: %d\n", current->nonTerminal);
         printf("number of productions: %d\n", current->num_symbol);
@@ -105,6 +106,5 @@ void showProductionRules() {
         }
         printf("\n");
         printf("----\n");
-        current = current->next;
     }
 }

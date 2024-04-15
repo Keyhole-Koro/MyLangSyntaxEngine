@@ -13,8 +13,6 @@ StringMapping *mappings_nonTerminal;
 StringMapping *string_mappings;
 
 static StringMapping *registerStringMapping(char *str);
-static StringMapping *findStringMapping(char *str);
-static StringMapping *constructStringMapping(char *str);
 
 symbol mapString(char *str, bool isTerminal) {
     if (isTerminal) {
@@ -58,33 +56,5 @@ static StringMapping *registerStringMapping(char *str) {
     }
     *ppCurrent = new_mapping;
 
-    return new_mapping;
-}
-
-static StringMapping *findStringMapping(char *str) {
-    for (StringMapping *current = string_mappings; current != NULL; current = current->next) {
-        if (strcmp(current->string, str) == 0) {
-            return current;
-        }
-    }
-    return NULL;
-}
-
-StringMapping *constructStringMapping(char *str) {
-    StringMapping *new_mapping = (StringMapping *)malloc(sizeof(StringMapping));
-    if (new_mapping == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    new_mapping->string = strdup(str);
-    if (new_mapping->string == NULL) {
-        free(new_mapping);
-        fprintf(stderr, "String duplication failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    new_mapping->number = current_num_strmap++;
-    new_mapping->next = NULL;
     return new_mapping;
 }
