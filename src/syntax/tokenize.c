@@ -6,7 +6,10 @@ Token *tokenizeLine(char *ipt, Token *cur) {
     char *rest;
 
     while (*ipt) {
-        if (*ipt == '\n') break;
+        if (*ipt == '\n') {
+            cur = makeToken(cur, NEWLINE, NULL);
+            ipt++;
+        }
 
         if (*ipt == ' ') {
             ipt++;

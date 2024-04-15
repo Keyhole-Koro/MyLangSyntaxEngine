@@ -8,6 +8,7 @@ typedef enum {
     NON_TERMINAL,
     COLON,
     PIPE,
+    NEWLINE,
 } TokenKind;
 
 typedef struct Token Token;

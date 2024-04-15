@@ -13,14 +13,12 @@ typedef struct ProductionRule {
     int num_symbol;
     symbol *production;
     struct ProductionRule *next;
-} ProductionRule;
+} symbolArray;
 
 extern ProductionRule *productions;
 
 void processSyntaxTxt(char *file_path);
 
 void showProductionRules();
-
-int processRightBuffer(char *buffer, symbol **right);
 
 #endif

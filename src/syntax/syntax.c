@@ -9,6 +9,7 @@ ProductionRule *prod_rules;
 
 static ProductionRule *constructRule(symbol left, symbol *right, int size_right);
 static void registerSyntax(symbol left, symbol *right, int size_right);
+symbol *processRightBuffer(Token *cur, int *len_right, Token **rest);
 
 void processSyntaxTxt(char *file_path) {
     FILE *file;
@@ -23,6 +24,7 @@ void processSyntaxTxt(char *file_path) {
     head.next = NULL;
     Token *cur = &head;
 
+    // tokenize
     while (fgets(line, sizeof(line), file) != NULL) {
         cur = tokenizeLine(line, cur);
     }
@@ -30,11 +32,21 @@ void processSyntaxTxt(char *file_path) {
     symbol left = 0;
     int size_right = 0;
     symbol *right;
-    char *rest = NULL;
+    Token *rest = NULL;
 
+    // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
-        
-        
+        Token *next = current->next;
+        if (current->kind == NON_TERMINAL && next->kind == COLON) {
+            left = StringMapping(current->value, non_terminal);
+            continue;
+        } else if (current->kind == COLON || current->kind == PIPE) {
+            int len_right = 0;
+            symbol *right_buffer = processRightBuffer(next, &len_right, &rest);
+            registerSyntax(left, right_buffer, len_right);
+            current = rest;
+            continue;
+        }
     }
 
     fclose(file);
@@ -53,8 +65,7 @@ static ProductionRule *constructRule(symbol left, symbol *right, int size_right)
     return rule;
 }
 
-static void registerSyntax(symbol left, symbol *right, int size_right) {
-    ProductionRule *newRule = constructRule(left, right, size_right);
+static void registerSyntax(ProductionRule *newRule) {
     if (prod_rules == NULL) {
         prod_rules = newRule;
     } else {
@@ -66,46 +77,20 @@ static void registerSyntax(symbol left, symbol *right, int size_right) {
     }
 }
 
-int processRightBuffer(char *buffer, symbol **right) {
-    int initial_buffer_size = 10;
-    symbol *sym_buffer = (symbol *)malloc(initial_buffer_size * sizeof(symbol));
-    if (sym_buffer == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(EXIT_FAILURE);
+symbol *processRightBuffer(Token *cur, int *len_right, Token **rest) {
+    int size_right = 10;
+    int num_tk = 0;
+    symbol *newRight = malloc(size_right * sizeof(symbol));
+    for (Token *current = cur; current; current = current->next) {
+        if (current->kind != TERMINAL || current->kind != NON_TERMINAL) continue;
+        newRight[num_tk++] = current->kind == TERMINAL ? 
+            mapString(current->value, true) : mapString(current->value, false);
     }
-    
-    int num_sym = 0;
-    char *rest;
-    while (*buffer) {
-        if (num_sym >= initial_buffer_size) {
-            initial_buffer_size *= 2;
-            symbol *new_sym_buffer = (symbol *)realloc(sym_buffer, initial_buffer_size * sizeof(symbol));
-            if (new_sym_buffer == NULL) {
-                fprintf(stderr, "Memory reallocation failed\n");
-                exit(EXIT_FAILURE);
-            }
-            sym_buffer = new_sym_buffer;
-        }
-
-        if (*buffer == ' ') {
-            buffer++;
-            continue;
-        }
-
-        if (*buffer == '\'') {
-            sym_buffer[num_sym++] = mapString(readUntil(isSingleQuote, buffer, &rest), terminal);
-            buffer = rest;
-            continue;
-        }
-        
-        sym_buffer[num_sym++] = mapString(readUntil(isSpace, buffer, &rest), non_terminal);
-        buffer = rest;
-
-        buffer++;
-    }
-    *right = sym_buffer;
-
-    return num_sym;
+            
+    newRight = realloc(newRight, num_tk * sizeof(symbol));
+    *len_right = num_tk;
+    *rest = current;
+    return newRight;
 }
 
 void showProductionRules() {
