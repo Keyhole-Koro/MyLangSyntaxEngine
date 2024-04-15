@@ -6,10 +6,6 @@ Token *tokenizeLine(char *ipt, Token *cur) {
     char *rest;
 
     while (*ipt) {
-        if (*ipt == '\n') {
-            cur = makeToken(cur, NEWLINE, NULL);
-            ipt++;
-        }
 
         if (*ipt == ' ') {
             ipt++;
@@ -22,21 +18,28 @@ Token *tokenizeLine(char *ipt, Token *cur) {
             continue;
         }
 
-        if (*ipt == '\'') {
-
-            cur = makeToken(cur, TERMINAL, readUntil(isSingleQuote, ++ipt, &rest));
-            ipt = rest;
+        if (*ipt == ':') {
+            cur = makeToken(cur, COLON, NULL);
+            ipt++;
             continue;
         }
         
         if (isAlphabet(*ipt)) {
-            cur = makeToken(cur, NON_TERMINAL, readUntil(isSpace, ipt, &rest));
+            cur = makeToken(cur, NON_TERMINAL, readUntil(isOtherThanAlphabet, ipt, &rest));
             ipt = rest;
+            continue;
+        }
+
+        if (*ipt == '\'') {
+            cur = makeToken(cur, TERMINAL, readUntil(isSingleQuote, ++ipt, &rest));
+            ipt = ++rest;
             continue;
         }
 
         ipt++;
     }
+
+    cur = makeToken(cur, NEWLINE, NULL);
     
     return cur;
 }
@@ -53,4 +56,12 @@ Token *makeToken(Token* prev, TokenKind kind, char *value) {
     prev->next = new_tk;
     
     return new_tk;
+}
+
+void printTokenList(Token *head) {
+    Token *current = head;
+    while (current != NULL) {
+        printf("Kind: %d, Value: %s\n", current->kind, current->value);
+        current = current->next;
+    }
 }

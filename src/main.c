@@ -1,8 +1,8 @@
 #include "main.h"
 
 int main() {
-    char *path = "/workspaces/LR1_parser/syntaxSamples/sample1.txt";
-    
+    char *path = "./syntaxSamples/sample1.txt";
+
     processSyntaxTxt(path);
 
     showProductionRules();

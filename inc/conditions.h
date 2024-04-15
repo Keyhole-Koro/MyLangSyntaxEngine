@@ -10,5 +10,6 @@ bool isSingleQuote(char ipt);
 bool isSpace(char ipt);
 bool isOtherThanSpace(char ipt);
 bool isAlphabet(char letter);
+bool isOtherThanAlphabet(char letter);
 
 #endif

@@ -29,21 +29,26 @@ void processSyntaxTxt(char *file_path) {
         cur = tokenizeLine(line, cur);
     }
 
+    printTokenList(&head);
+
     symbol left = 0;
     Token *rest = NULL;
 
-    printf("n\n");
     // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
-        Token *next = current->next;
+
+        Token *next= current->next;
+
         if (current->kind == NON_TERMINAL && next->kind == COLON) {
             left = mapString(current->value, non_terminal);
             continue;
         } else if (current->kind == COLON || current->kind == PIPE) {
             int len_right = 0;
             symbol *right = processRightBuffer(next, &len_right, &rest);
+
             registerSyntax(left, right, len_right);
             current = rest;
+
             continue;
         }
     }
@@ -76,21 +81,23 @@ static void registerSyntax(symbol left, symbol *right, int num_symbol) {
         current->next = newRule;
     }
 }
-
 symbol *processRightBuffer(Token *cur, int *len_right, Token **rest) {
-    int size_right = 10;
+    int size_right_buffer = 5;
     int num_tk = 0;
-    symbol *newRight = malloc(size_right * sizeof(symbol));
+    symbol *newRight = malloc(size_right_buffer * sizeof(symbol));
     Token *current;
-    for (current = cur; current; current = current->next) {
+    for (current = cur; current->next; current = current->next) {
+        if (current->kind == NEWLINE) break;
+    	
         if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
         newRight[num_tk++] = current->kind == TERMINAL ? 
-            mapString(current->value, true) : mapString(current->value, false);
+            mapString(current->value, terminal) : mapString(current->value, non_terminal);
     }
             
-    newRight = realloc(newRight, num_tk * sizeof(symbol));
     *len_right = num_tk;
+
     *rest = current;
+
     return newRight;
 }
 

@@ -7,8 +7,8 @@ int number_Terminal = 1;
 
 int current_num_strmap = 0;
 int max_size_strmap = 32;
-StringMapping *mappings_terminal;
-StringMapping *mappings_nonTerminal;
+const StringMapping *mappings_terminal;
+const StringMapping *mappings_nonTerminal;
 
 StringMapping *string_mappings;
 
@@ -23,6 +23,7 @@ symbol mapString(char *str, bool isTerminal) {
         string_mappings = mappings_nonTerminal;
     }
 
+	// checks if the same name has existed
     for (StringMapping *current = string_mappings; current != NULL; current = current->next) {
         if (strcmp(current->string, str) == 0) {
             return current->number;

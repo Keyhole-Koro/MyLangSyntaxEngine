@@ -19,5 +19,8 @@ struct Token {
 };
 
 Token *tokenizeLine(char *ipt, Token *cur);
+void printTokenList(Token *head);
+
+
 
 #endif
