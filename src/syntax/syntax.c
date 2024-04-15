@@ -13,7 +13,12 @@ symbol *processRightBuffer(Token *cur, int *len_right, Token **rest);
 
 void processSyntaxTxt(char *file_path) {
     FILE *file;
-    char line[50];
+    int len_line = 50;
+    char line[len_line];
+
+    for (int i = 0; i < len_line; i++) {
+        line[i] = 0;
+    }
 
     file = fopen(file_path, "r");
     if (file == NULL) {
@@ -23,7 +28,7 @@ void processSyntaxTxt(char *file_path) {
     Token head;
     head.next = NULL;
     Token *cur = &head;
-
+    printf("0\n");
     // tokenize
     while (fgets(line, sizeof(line), file) != NULL) {
         cur = tokenizeLine(line, cur);
@@ -33,6 +38,7 @@ void processSyntaxTxt(char *file_path) {
 
     symbol left = 0;
     Token *rest = NULL;
+    printf("1\n");
 
     // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
@@ -52,6 +58,7 @@ void processSyntaxTxt(char *file_path) {
             continue;
         }
     }
+    printf("9\n");
 
     fclose(file);
 }

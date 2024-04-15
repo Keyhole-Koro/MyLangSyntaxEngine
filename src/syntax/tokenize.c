@@ -23,7 +23,7 @@ Token *tokenizeLine(char *ipt, Token *cur) {
             ipt++;
             continue;
         }
-        
+
         if (isAlphabet(*ipt)) {
             cur = makeToken(cur, NON_TERMINAL, readUntil(isOtherThanAlphabet, ipt, &rest));
             ipt = rest;
