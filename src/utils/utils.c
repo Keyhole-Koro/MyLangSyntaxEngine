@@ -39,3 +39,13 @@ char *readUntil(bool (*condition)(char), char *ipt, char **rest) {
 
     return buffer;
 }
+
+char *my_strdup(const char *s) {
+    size_t len = strlen(s) + 1;
+    char *copy = malloc(len);
+    if (copy == NULL) {
+        return NULL;
+    }
+    strcpy(copy, s);
+    return copy;
+}

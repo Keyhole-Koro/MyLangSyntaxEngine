@@ -6,6 +6,10 @@ int main() {
     processSyntaxTxt(path);
 
     showProductionRules();
-    
+
+    printMapping_Non_Terminal();
+
+    printMapping_Terminal();
+
     return 0;
 }

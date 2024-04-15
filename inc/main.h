@@ -4,5 +4,6 @@
 #include <stdio.h>
 
 #include "syntax.h"
+#include "stringMapper.h"
 
 #endif

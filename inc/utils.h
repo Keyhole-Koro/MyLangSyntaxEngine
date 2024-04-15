@@ -13,4 +13,6 @@
 
 char *readUntil(IN bool (*condition)(char), IN char *ipt, OUT char **rest);
 
+char *my_strdup(const char *s);
+
 #endif

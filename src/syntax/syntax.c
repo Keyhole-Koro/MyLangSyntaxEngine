@@ -28,17 +28,14 @@ void processSyntaxTxt(char *file_path) {
     Token head;
     head.next = NULL;
     Token *cur = &head;
-    printf("0\n");
+
     // tokenize
     while (fgets(line, sizeof(line), file) != NULL) {
         cur = tokenizeLine(line, cur);
     }
 
-    printTokenList(&head);
-
     symbol left = 0;
     Token *rest = NULL;
-    printf("1\n");
 
     // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
@@ -58,7 +55,6 @@ void processSyntaxTxt(char *file_path) {
             continue;
         }
     }
-    printf("9\n");
 
     fclose(file);
 }

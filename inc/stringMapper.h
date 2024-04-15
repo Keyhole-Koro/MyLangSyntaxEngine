@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include "symbol.h"
+#include "utils.h"
 
 /**
     @brief This method enables to find string efficiently,
@@ -25,4 +26,6 @@ typedef struct StringMapping {
 **/
 symbol mapString(char *str, bool isTerminal);
 
+void printMapping_Termianl();
+void printMapping_Non_Termianl();
 #endif
