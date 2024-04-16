@@ -55,6 +55,7 @@ Item *findItem(symbol *production, symbol readSymbol) {
     return traverseItems(&entry_items, &item);
 }
 
+// still odd
 Item *traverseItems(Item *item, Item *expectedItem) {
 
     if (item == NULL) return NULL;
@@ -67,13 +68,26 @@ Item *traverseItems(Item *item, Item *expectedItem) {
         if (rule->nonTerminal != expectedRule->nonTerminal || rule->read_pos != expectedRule->read_pos) {
             return traverseItems(item->anotherInherits, expectedItem);
         }
+        symbol expectedSym;
+        symbol sym;
+        int = 0;
+        bool same = true; // temporary
+        while (((sym = rule->production[i]) != END_SYMBOL_ARRAY
+                && expectedSym = expectedRule->production[i]) != END_SYMBOL_ARRAY) {
+            if (sym != expectedSym) {
+                same = false;
+                break;
+            }
+            i++;
+        }
+        if (same) return item;
+
         expectedRule = expectedRule->anotherInherits;
         rule = rule->anotherInherits;
     }
 
     if (expectedRule == NULL && rule == NULL) return item;
     else return traverseItems(item->anotherInherits, expectedItem);
-    
 }
 
 symbol *getReadSymbol(ProductionRule *prod) {
@@ -84,8 +98,14 @@ symbol *getReadSymbol(ProductionRule *prod) {
         In this case, the symbol is an integer.
         It offers a time complexity of O(1).
         Otherwise, in the worst-case scenario, the nested loop results in a time complexity of O(x^2).
+
+        @brief reviser
+        since symbol can has minus indicates non_terminal, by using revisor,
+        revise the number(symbol) by adding the half of (length of the array),
+        for example, symbol = -25 -> revised symbol = 0
     */
     int len_existanceArr = 50;
+    int reviser = len_existanceArr / 2;
     bool symbolExistanceArray[len_existanceArr];
     for (int i = 0; i < len_existanceArr; i++) {
         symbolExistanceArray[i] = false;
@@ -98,9 +118,10 @@ symbol *getReadSymbol(ProductionRule *prod) {
     for (ProductionRule *rule = prod; rule; rule = rule->anotherInherits) {
         symbol readSym = readSymbol(rule);
         // if overlap array can handle the symbol
-        if (len_existanceArr < readSym) {
-            if (symbolExistanceArray[readSym]) continue;
-            symbolExistanceArray[readSym] = true;
+        int revisedOffset = reviser + readSym
+        if (revisedOffset >= 0 && revisedOffset < len_existanceArr) {
+            if (symbolExistanceArray[revisedOffset]) continue;
+            symbolExistanceArray[revisedOffset] = true;
         } else {
             bool found = false;
             for (int j = 0; i < num_syms; i++) {
