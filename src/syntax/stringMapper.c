@@ -10,25 +10,24 @@ int max_size_strmap = 32;
 StringMapping mappings_terminal = {NULL, 0, NULL};
 StringMapping mappings_nonTerminal = {NULL, 0, NULL};
 
-StringMapping *string_mappings;
+StringMapping *target_mappings;
 
 StringMapping *registerStringMapping(const char *str);
+
+StringMapping *checkIfExist(char *str);
 
 symbol mapString(char *str, bool isTerminal) {
     if (isTerminal) {
         is_terminal = true;
-        string_mappings = &mappings_terminal;
+        target_mappings = &mappings_terminal;
     } else {        
         is_terminal = false;
-        string_mappings = &mappings_nonTerminal;
+        target_mappings = &mappings_nonTerminal;
     }
 
-	// checks if the same name has existed
-    for (StringMapping *current = string_mappings; current != NULL; current = current->next) {
-        if (current->string && strcmp(current->string, str) == 0) {
-            return current->number;
-        }
-    }
+    // checks if str has existed
+    StringMapping *foundMapping = checkIfExist(str);
+    if (foundMapping) return foundMapping->number;
     
     StringMapping *new_mapping = registerStringMapping(str);
     return new_mapping->number;
@@ -50,7 +49,7 @@ StringMapping *registerStringMapping(const char *str) {
     new_mapping->number = is_terminal ? number_Terminal++ : number_nonTerminal--;
     new_mapping->next = NULL;
 
-    StringMapping **ppCurrent = &string_mappings;
+    StringMapping **ppCurrent = &target_mappings;
     while (*ppCurrent != NULL) {
         ppCurrent = &((*ppCurrent)->next);
     }
@@ -58,6 +57,15 @@ StringMapping *registerStringMapping(const char *str) {
 
 
     return new_mapping;
+}
+
+StringMapping *checkIfExist(char *str) {
+    for (StringMapping *current = target_mappings; current != NULL; current = current->next) {
+        if (current->string && strcmp(current->string, str) == 0) {
+            return current;
+        }
+    }
+    return NULL;
 }
 
 void printMapping_Terminal() {

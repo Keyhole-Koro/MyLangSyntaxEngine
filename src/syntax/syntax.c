@@ -9,13 +9,14 @@ ProductionRule *prod_rules;
 
 static ProductionRule *constructRule(symbol left, symbol *right, int size_right);
 static void registerSyntax(symbol left, symbol *right, int num_symbol);
-symbol *processRightBuffer(Token *cur, int *len_right, Token **rest);
+symbol *processRightBuffer(IN Token *cur, IN int *len_right, OUT Token **rest);
 
 void processSyntaxTxt(char *file_path) {
     FILE *file;
     int len_line = 50;
     char line[len_line];
 
+    // initialize the array
     for (int i = 0; i < len_line; i++) {
         line[i] = 0;
     }
@@ -34,17 +35,25 @@ void processSyntaxTxt(char *file_path) {
         cur = tokenizeLine(line, cur);
     }
 
-    symbol left = 0;
-    Token *rest = NULL;
-
     // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
+        symbol left = 0;
+        Token *rest = NULL;
 
         Token *next= current->next;
 
+        /** 
+            @brief example sample1.txt
+            term          :
+        */
         if (current->kind == NON_TERMINAL && next->kind == COLON) {
             left = mapString(current->value, non_terminal);
             continue;
+        /**
+            @brief example sample1.txt
+                : factor
+                | term '*' factor
+        */
         } else if (current->kind == COLON || current->kind == PIPE) {
             int len_right = 0;
             symbol *right = processRightBuffer(next, &len_right, &rest);

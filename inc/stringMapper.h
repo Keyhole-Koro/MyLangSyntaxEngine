@@ -13,7 +13,7 @@
 /**
     @brief This method enables to find string efficiently,
     by using number but string, calculation of comparing is improved 
-**/
+*/
 
 typedef struct StringMapping {
     char *string;
@@ -23,7 +23,7 @@ typedef struct StringMapping {
 
 /**
     @param isTerminal if false, non terminal
-**/
+*/
 symbol mapString(char *str, bool isTerminal);
 
 void printMapping_Termianl();
