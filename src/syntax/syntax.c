@@ -7,9 +7,9 @@ int current_num_syntax = 0;
 int max_size_syntax = 32;
 ProductionRule *prod_rules;
 
-static ProductionRule *constructRule(symbol left, symbol *right, int size_right);
-static void registerSyntax(symbol left, symbol *right, int num_symbol);
-symbol *processRightBuffer(IN Token *cur, IN int *len_right, OUT Token **rest);
+static ProductionRule *constructRule(symbol left, symbol *right);
+static void registerSyntax(symbol left, symbol *right);
+symbol *processRightBuffer(IN Token *cur, OUT Token **rest);
 
 void processSyntaxTxt(char *file_path) {
     FILE *file;
@@ -23,6 +23,7 @@ void processSyntaxTxt(char *file_path) {
 
     file = fopen(file_path, "r");
     if (file == NULL) {
+        printf("failed to open file %s\n", file_path);
         exit(EXIT_FAILURE);
     }
 
@@ -55,10 +56,9 @@ void processSyntaxTxt(char *file_path) {
                 | term '*' factor
         */
         } else if (current->kind == COLON || current->kind == PIPE) {
-            int len_right = 0;
-            symbol *right = processRightBuffer(next, &len_right, &rest);
+            symbol *right = processRightBuffer(next, &rest);
 
-            registerSyntax(left, right, len_right);
+            registerSyntax(left, right);
             current = rest;
 
             continue;
@@ -68,21 +68,21 @@ void processSyntaxTxt(char *file_path) {
     fclose(file);
 }
 
-static ProductionRule *constructRule(symbol left, symbol *right, int size_right) {
+static ProductionRule *constructRule(symbol left, symbol *right) {
     ProductionRule *rule = (ProductionRule *)malloc(sizeof(ProductionRule));
     if (rule == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
     rule->nonTerminal = left;
-    rule->num_symbol = size_right;
     rule->production = right;
+    rule->read_pos = 0;
     rule->next = NULL;
     return rule;
 }
 
-static void registerSyntax(symbol left, symbol *right, int num_symbol) {
-    ProductionRule *newRule = constructRule(left, right, num_symbol);
+static void registerSyntax(symbol left, symbol *right) {
+    ProductionRule *newRule = constructRule(left, right);
     if (prod_rules == NULL) {
         prod_rules = newRule;
     } else {
@@ -93,20 +93,27 @@ static void registerSyntax(symbol left, symbol *right, int num_symbol) {
         current->next = newRule;
     }
 }
-symbol *processRightBuffer(Token *cur, int *len_right, Token **rest) {
-    int size_right_buffer = 5;
+symbol *processRightBuffer(Token *cur, Token **rest) {
+    int len_right = 5;
     int num_tk = 0;
-    symbol *newRight = malloc(size_right_buffer * sizeof(symbol));
+    symbol *newRight = malloc(len_right * sizeof(symbol));
+    newRight[0] = END_SYMBOL_ARRAY;
     Token *current;
     for (current = cur; current->next; current = current->next) {
         if (current->kind == NEWLINE) break;
     	
         if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
+
+        if (num_tk + 1 > len_right) {
+            len_right *= 2;
+            newRight = realloc(newRight, len_right * sizeof(symbol));
+        }
+
         newRight[num_tk++] = current->kind == TERMINAL ? 
             mapString(current->value, terminal) : mapString(current->value, non_terminal);
     }
-            
-    *len_right = num_tk;
+
+    newRight[num_tk] = END_SYMBOL_ARRAY;
 
     *rest = current;
 
@@ -118,10 +125,12 @@ void showProductionRules() {
     for (; current; current = current->next) {
         printf("----\n");
         printf("nonTerminal: %d\n", current->nonTerminal);
-        printf("number of productions: %d\n", current->num_symbol);
         printf("production:");
-        for (int i = 0; i < current->num_symbol; i++) {
-            printf(" %d", current->production[i]);
+        symbol sym = 0; // initialization
+        int i = 0;
+        while ((sym = extractedSymbols[i]) != END_SYMBOL_ARRAY) {
+            printf(" %d", sym);
+            i++;
         }
         printf("\n");
         printf("----\n");
