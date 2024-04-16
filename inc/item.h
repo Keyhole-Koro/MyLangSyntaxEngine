@@ -5,10 +5,12 @@
 
 typedef struct {
     ProductionRule *production;
-    symbol readSymbol;
-    /** @brief a list of items inherit from this struct */
-    struct Item *inheritingItems;
-    struct Item *anotherInherits;
+    symbol targetSymbol;
+    
+    int offset_inheritingItems
+    int len_inheritingItems;
+    /** @brief an array of items inherit from this struct */
+    struct Item **inheritingItems;
 } Item;
 
 void setEntry(ProductionRule *entryRule);

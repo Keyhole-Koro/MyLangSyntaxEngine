@@ -7,12 +7,16 @@ ProductionRule entry_items = NULL;
 
 Item *constructItem() {
     if (!entry_prod) {
-        printf("The entry of rule hasnt been set.\n
-            Set the entry by using setEntry(ProductionRule*) before you run constructItem");
+        printf("The entry of rule hasn't been set.\n");
+        printf("Set the entry by using setEntry(ProductionRule*) before you run constructItem\n");
         exit(EXIT_FAILURE);
     }
 
     Item *entryItem = malloc(sizeof(Item));
+    if (!entryItem) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
     entryItem->production = copyRule(&entry_prod);
 
     constructItem_(entryItem);
@@ -21,7 +25,7 @@ Item *constructItem() {
 Item *constructItem_(Item *item) {
     if (!entry_items) entry_items = item;
 
-    symbol *extractedSymbols = getReadSymbol(item->production);
+    symbol *extractedSymbols = getTargetSymbol(item->production);
 
     int i = 0;
     symbol sym = 0; // initialization
@@ -35,13 +39,19 @@ Item *constructItem_(Item *item) {
         }
 
         Item *newItem = malloc(sizeof(Item));
-        if (newItem == NULL) {
+        if (!newItem) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
-        newItem->readSymbol = sym;
+        newItem->targetSymbol = sym;
         newItem->production = gatheredRules;
-        newItem->inheritingItems = constructItem_(newItem);
+        newItem->len_inheritingItems = 5;
+        newItem->inheritingItems = calloc(newItem->len_inheritingItems, sizeof(Item *));
+        if (!newItem->inheritingItems) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+        addInheritingItem(item, constructItem_(newItem));
 
         i++;
     }
@@ -50,8 +60,17 @@ Item *constructItem_(Item *item) {
     return NULL;
 }
 
-Item *findItem(symbol *production, symbol readSymbol) {
-    Item item = {production, readSymbol, NULL};
+void addInheritingItem(Item *item, Item *inheritingItem) {
+    if (item->offset_inheritingItems > item->len_inheritingItems) item->inheritingItems = realloc(item->inheritingItems, (item->len_inheritingItems *= 2) * sizeof(Item *));
+        if (!item->inheritingItems) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+    item->inheritingItems[item->offset_inheritingItems++] = inheritingItem;
+}
+
+Item *findItem(symbol *production, symbol targetSymbol) {
+    Item item = {production, targetSymbol, NULL};
     return traverseItems(&entry_items, &item);
 }
 
@@ -60,7 +79,7 @@ Item *traverseItems(Item *item, Item *expectedItem) {
 
     if (item == NULL) return NULL;
 
-    if (item->readSymbol != expectedItem->readSymbol) return traverseItems(item->anotherInherits, expectedItem);
+    if (item->targetSymbol != expectedItem->targetSymbol) return traverseItems(item->anotherInherits, expectedItem);
 
     ProductionRule *expectedRule = expectedItem->production;
     ProductionRule *rule = item->production;
@@ -90,7 +109,7 @@ Item *traverseItems(Item *item, Item *expectedItem) {
     else return traverseItems(item->anotherInherits, expectedItem);
 }
 
-symbol *getReadSymbol(ProductionRule *prod) {
+symbol *getTargetSymbol(ProductionRule *prod) {
     /** 
         @brief Algorithm improvement:
         The symbolExistanceArray is used to check whether an element already exists.
