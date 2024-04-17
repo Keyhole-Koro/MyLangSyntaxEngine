@@ -8,25 +8,23 @@
 #include "stringMapper.h"
 #include "utils.h"
 
-/** @brief use 0 indicates an end of the array
-    0 is not used for symbol */
+/** @brief Use 0 to indicate an end of the array */
 #define END_SYMBOL_ARRAY (0)
 
 typedef struct ProductionRule ProductionRule;
 
 struct ProductionRule {
     int id;
-    symbol nonTerminal; // left
-    int numProd;
-    symbol *production; // right
-    int dot_pos;
+    symbol nonTerminal; // Left side
+    int numSymbols; // the number of elements of production below
+    symbol *production; // Right side
+    int dotPos;
     ProductionRule *next;
 };
 
 extern ProductionRule *prod_rules;
 
 void processSyntaxTxt(char *file_path);
-
 void showProductionRules();
 
 /** @brief Terms

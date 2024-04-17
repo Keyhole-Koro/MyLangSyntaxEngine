@@ -1,42 +1,31 @@
 #include "syntax.h"
 
-#define terminal 1
-#define non_terminal 0
+#define IS_TERMINAL 1
+#define IS_NONTERMINAL 0
 
-int cur_id = 0;
-
-int current_num_syntax = 0;
-int max_size_syntax = 32;
-ProductionRule *prod_rules;
+static int curId = 0;
 
 static ProductionRule *constructRule(symbol left, symbol *right);
 static void registerSyntax(symbol left, symbol *right);
-symbol *processRightBuffer(IN Token *cur, OUT Token **rest);
+static symbol *processRightBuffer(Token *cur, Token **rest);
 
 void processSyntaxTxt(char *file_path) {
-    FILE *file;
-    int len_line = 50;
-    char line[len_line];
-
-    // initialize the array
-    for (int i = 0; i < len_line; i++) {
-        line[i] = 0;
-    }
-
-    file = fopen(file_path, "r");
+    FILE *file = fopen(file_path, "r");
     if (file == NULL) {
-        printf("failed to open file %s\n", file_path);
+        fprintf(stderr, "Failed to open file %s\n", file_path);
         exit(EXIT_FAILURE);
     }
 
     Token head;
     head.next = NULL;
     Token *cur = &head;
+    char line[50];
 
-    // tokenize
     while (fgets(line, sizeof(line), file) != NULL) {
         cur = tokenizeLine(line, cur);
     }
+
+    fclose(file);
 
     symbol left = 0;
     Token *rest = NULL;
@@ -51,7 +40,7 @@ void processSyntaxTxt(char *file_path) {
             term          :
         */
         if (current->kind == NON_TERMINAL && next->kind == COLON) {
-            left = mapString(current->value, non_terminal);
+            left = mapString(current->value, IS_NONTERMINAL);
             continue;
         /**
             @brief example sample1.txt
@@ -67,81 +56,82 @@ void processSyntaxTxt(char *file_path) {
         }
     }
 
-    fclose(file);
 }
 
 static ProductionRule *constructRule(symbol left, symbol *right) {
-    ProductionRule *rule = (ProductionRule *)malloc(sizeof(ProductionRule));
-    if (rule == NULL) {
+    ProductionRule *rule = malloc(sizeof(ProductionRule));
+    if (!rule) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
-    rule->id = cur_id++;
+    rule->id = curId++;
     rule->nonTerminal = left;
     rule->production = right;
-    rule->dot_pos = 0;
+    rule->dotPos = 0;
     rule->next = NULL;
-    int sym = 0;
     int i = -1;
-    while ((sym = rule->production[++i]) != END_SYMBOL_ARRAY) {}
-    rule->numProd = i;
+    while (right[++i] != END_SYMBOL_ARRAY) {}
+    rule->numSymbols = i;
     return rule;
 }
 
 static void registerSyntax(symbol left, symbol *right) {
     ProductionRule *newRule = constructRule(left, right);
-    if (prod_rules == NULL) {
+    if (!prod_rules) {
         prod_rules = newRule;
     } else {
         ProductionRule *current = prod_rules;
-        while (current->next != NULL) {
+        while (current->next) {
             current = current->next;
         }
         current->next = newRule;
     }
 }
-symbol *processRightBuffer(Token *cur, Token **rest) {
+
+static symbol *processRightBuffer(Token *cur, Token **rest) {
     int maxRight = 5;
-    int num_tk = 0;
+    int numTk = 0;
     symbol *newRight = malloc(maxRight * sizeof(symbol));
+    if (!newRight) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
     newRight[0] = END_SYMBOL_ARRAY;
     Token *current;
     for (current = cur; current->next; current = current->next) {
         if (current->kind == NEWLINE) break;
-    	
         if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
-
-        if (num_tk + 1 > maxRight) {
+        if (numTk + 1 > maxRight) {
             maxRight *= 2;
             newRight = realloc(newRight, maxRight * sizeof(symbol));
+            if (!newRight) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(EXIT_FAILURE);
+            }
         }
-
-        newRight[num_tk++] = current->kind == TERMINAL ? 
-            mapString(current->value, terminal) : mapString(current->value, non_terminal);
+        newRight[numTk++] = current->kind == TERMINAL ? 
+            mapString(current->value, IS_TERMINAL) : mapString(current->value, IS_NONTERMINAL);
     }
-
-    newRight[num_tk] = END_SYMBOL_ARRAY;
-
+    newRight[numTk] = END_SYMBOL_ARRAY;
     *rest = current;
-
     return newRight;
 }
 
 void showProductionRules() {
     ProductionRule *current = prod_rules;
-    for (; current; current = current->next) {
+    while (current) {
         printf("----\n");
-        printf("id: %d\n", current->id);
-        printf("nonTerminal: %d\n", current->nonTerminal);
-        printf("the number of elements of production: %d\n", current->numProd);
-        printf("production:");
-        symbol sym = 0; // initialization
+        printf("ID: %d\n", current->id);
+        printf("Non-Terminal: %d\n", current->nonTerminal);
+        printf("Number of Productions: %d\n", current->numSymbols);
+        printf("Production:");
         int i = 0;
-        while ((sym = current->production[i]) != END_SYMBOL_ARRAY) {
-            printf(" %d", sym);
-            i++;
+        while (current->production[i] != END_SYMBOL_ARRAY) {
+            printf(" %d", current->production[i++]);
         }
         printf("\n");
-        printf("----\n");
+        current = current->next;
     }
+    printf("----\n");
+
 }

@@ -3,6 +3,7 @@
 
 #define UNSET_ID (-1)
 
+ProductionRule *prod_rules;
 ProductionRule entryProduction = {UNSET_ID, 0, 0, NULL, 0, NULL};
 Item *entryItems = NULL;
 
@@ -181,7 +182,7 @@ symbol *extractTargetSymbols(ProductionRule *prod) {
 }
 
 symbol readNextSymbol(ProductionRule *rule) {
-    return rule->production[rule->dot_pos++];
+    return rule->production[rule->dotPos++];
 }
 
 ProductionRule *filterRulesBySymbol(symbol expectedSymbol) {
@@ -204,7 +205,7 @@ ProductionRule *copyProductionRule(ProductionRule *rule) {
         exit(EXIT_FAILURE);
     }
     memcpy(copy, rule, sizeof(ProductionRule));
-    copy->dot_pos = 0;
+    copy->dotPos = 0;
     copy->next = NULL;
     return copy;
 }
