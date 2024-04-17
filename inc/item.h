@@ -3,32 +3,16 @@
 
 #include "syntax.h"
 
-typedef struct {
+typedef struct Item {
     ProductionRule *production;
     symbol targetSymbol;
-    
-    int offset_inheritingItems
+    int offset_inheritingItems;
     int len_inheritingItems;
-    /** @brief an array of items inherit from this struct */
     struct Item **inheritingItems;
+    struct Item *next;
 } Item;
 
 void setEntry(ProductionRule *entryRule);
-
-/*
- /\: inheritation
- -: anotherInherits
-
- Item6~8 is inheritated from Item5 and Item3
-
-example
-    Item1
-    /    \
-Item4   Item2-Item3
-    \            /
-     Item5      /
-          \    /
-          Item6-Item7-Item8
-*/
+Item *constructItem();
 
 #endif

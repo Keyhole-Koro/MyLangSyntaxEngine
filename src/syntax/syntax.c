@@ -128,7 +128,7 @@ void showProductionRules() {
         printf("production:");
         symbol sym = 0; // initialization
         int i = 0;
-        while ((sym = extractedSymbols[i]) != END_SYMBOL_ARRAY) {
+        while ((sym = current->production[i]) != END_SYMBOL_ARRAY) {
             printf(" %d", sym);
             i++;
         }
