@@ -9,7 +9,6 @@ typedef struct Item {
     int offset_inheritingItems;
     int len_inheritingItems;
     struct Item **inheritingItems;
-    struct Item *next;
 } Item;
 
 void setEntry(ProductionRule *entryRule);

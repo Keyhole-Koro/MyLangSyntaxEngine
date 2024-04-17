@@ -1,6 +1,6 @@
 #include "item.h"
 
-ProductionRule entry_prod = {0, NULL, 0, NULL};
+ProductionRule entry_prod = {-1, 0, 0, NULL, 0, NULL};
 Item *entry_items = NULL;
 
 Item *constructItem_(Item *item);
@@ -14,7 +14,7 @@ ProductionRule *copyRule(ProductionRule *rule);
 
 Item *constructItem() {
     // checks if entry prod has been set by referencing an element
-    if (entry_prod.production == NULL) {
+    if (entry_prod.production == -1) {
         fprintf(stderr, "The entry rule has not been set.\n");
         fprintf(stderr, "Set the entry by using setEntry(ProductionRule*) before running constructItem\n");
         exit(EXIT_FAILURE);
@@ -91,7 +91,27 @@ Item *findItem(ProductionRule *production, symbol targetSymbol) {
     return traverseItems(entry_items, &item);
 }
 
+Item *traverseItems(Item *item, Item *expectedItem) {}
+/**
 Item *traverseItems(Item *item, Item *expectedItem) {
+    ProductionRule *expectedRule = expectedItem->production;
+    ProductionRule *rule = item->production;
+
+    // improve algorithm later
+    for (int i = 0; i < item->offset_inheritingItem; i++) {
+        Item *inheritingItem = item->inheritingItem[i];
+        tranverseItems(inheritingItem, expectedItem);
+    }
+
+    if (rule->nonTerminal != expectedRule->nonTerminal || rule->dot_pos != expectedRule->dot_pos) return NULL;
+
+
+
+
+
+
+
+
     if (item == NULL) return NULL;
 
     if (item->targetSymbol != expectedItem->targetSymbol) return traverseItems(item->next, expectedItem);
@@ -99,7 +119,7 @@ Item *traverseItems(Item *item, Item *expectedItem) {
     ProductionRule *expectedRule = expectedItem->production;
     ProductionRule *rule = item->production;
     while (expectedRule != NULL && rule != NULL) {
-        if (rule->nonTerminal != expectedRule->nonTerminal || rule->read_pos != expectedRule->read_pos) {
+        if (rule->nonTerminal != expectedRule->nonTerminal || rule->dot_pos != expectedRule->dot_pos) {
             return traverseItems(item->next, expectedItem);
         }
         symbol expectedSym = 0;
@@ -123,7 +143,7 @@ Item *traverseItems(Item *item, Item *expectedItem) {
     if (expectedRule == NULL && rule == NULL) return item;
     else return traverseItems(item->next, expectedItem);
 }
-
+*/
 symbol *getTargetSymbol(ProductionRule *prod) {
     int len_existenceArr = 50;
     int reviser = len_existenceArr / 2;
@@ -170,7 +190,7 @@ symbol *getTargetSymbol(ProductionRule *prod) {
 }
 
 symbol readSymbol(ProductionRule *rule) {
-    return rule->production[rule->read_pos++];
+    return rule->production[rule->dot_pos++];
 }
 
 ProductionRule *gatherRulesMatchesWithLeft(symbol expectedSymbol) {
@@ -193,7 +213,7 @@ ProductionRule *copyRule(ProductionRule *rule) {
         exit(EXIT_FAILURE);
     }
     memcpy(copy, rule, sizeof(ProductionRule));
-    copy->read_pos = 0;
+    copy->dot_pos = 0;
     copy->next = NULL;
     return copy;
 }

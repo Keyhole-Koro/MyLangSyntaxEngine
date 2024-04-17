@@ -3,6 +3,8 @@
 #define terminal 1
 #define non_terminal 0
 
+int cur_id = 0;
+
 int current_num_syntax = 0;
 int max_size_syntax = 32;
 ProductionRule *prod_rules;
@@ -35,13 +37,17 @@ void processSyntaxTxt(char *file_path) {
     while (fgets(line, sizeof(line), file) != NULL) {
         cur = tokenizeLine(line, cur);
     }
+    printTokenList(&head);
+
+    symbol left = 0;
+    Token *rest = NULL;
 
     // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
-        symbol left = 0;
-        Token *rest = NULL;
 
         Token *next= current->next;
+
+        printf("kind: %d\n",current->kind);
 
         /** 
             @brief example sample1.txt
@@ -57,7 +63,6 @@ void processSyntaxTxt(char *file_path) {
         */
         } else if (current->kind == COLON || current->kind == PIPE) {
             symbol *right = processRightBuffer(next, &rest);
-
             registerSyntax(left, right);
             current = rest;
 
@@ -74,10 +79,15 @@ static ProductionRule *constructRule(symbol left, symbol *right) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
+    rule->id = cur_id++;
     rule->nonTerminal = left;
     rule->production = right;
-    rule->read_pos = 0;
+    rule->dot_pos = 0;
     rule->next = NULL;
+    int sym = 0;
+    int i = -1;
+    while ((sym = rule->production[++i]) != END_SYMBOL_ARRAY) {}
+    rule->len_prod = i;
     return rule;
 }
 
@@ -124,7 +134,9 @@ void showProductionRules() {
     ProductionRule *current = prod_rules;
     for (; current; current = current->next) {
         printf("----\n");
+        printf("id: %d\n", current->id);
         printf("nonTerminal: %d\n", current->nonTerminal);
+        printf("length of production: %d\n", current->len_prod);
         printf("production:");
         symbol sym = 0; // initialization
         int i = 0;
