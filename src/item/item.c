@@ -3,9 +3,11 @@
 ProductionRule entry_prod = {-1, 0, 0, NULL, 0, NULL};
 Item *entry_items = NULL;
 
+int cur_num_item = 0;
+
 Item *constructItem_(Item *item);
 void addInheritingItem(Item *item, Item *inheritingItem);
-Item *findItem(ProductionRule *production, symbol targetSymbol);
+Item *findItem_(ProductionRule *production, symbol targetSymbol);
 Item *traverseItems(Item *item, Item *expectedItem);
 symbol *getTargetSymbol(ProductionRule *prod);
 symbol readSymbol(ProductionRule *rule);
@@ -53,6 +55,7 @@ Item *constructItem_(Item *item) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
+        cur_num_item++;
         newItem->targetSymbol = sym;
         newItem->production = gatheredRules;
         newItem->len_inheritingItems = 5;
@@ -88,62 +91,46 @@ void addInheritingItem(Item *item, Item *inheritingItem) {
 
 Item *findItem(ProductionRule *production, symbol targetSymbol) {
     Item item = {production, targetSymbol, 0, 0, NULL, NULL};
-    return traverseItems(entry_items, &item);
+    return findItem_(entry_items, &item);
 }
 
-Item *traverseItems(Item *item, Item *expectedItem) {}
-/**
-Item *traverseItems(Item *item, Item *expectedItem) {
-    ProductionRule *expectedRule = expectedItem->production;
-    ProductionRule *rule = item->production;
+Item *findItem_(Item *item, Item *expectedItem) {
+    Item *stack[cur_num_item];
+    int top = -1;
 
-    // improve algorithm later
-    for (int i = 0; i < item->offset_inheritingItem; i++) {
-        Item *inheritingItem = item->inheritingItem[i];
-        tranverseItems(inheritingItem, expectedItem);
-    }
+    stack[++top] = item;
 
-    if (rule->nonTerminal != expectedRule->nonTerminal || rule->dot_pos != expectedRule->dot_pos) return NULL;
+    while (top >= 0) {
+        item = stack[top--];
 
+        if (item->targetSymbol != expectedItem->targetSymbol) continue;
 
-
-
-
-
-
-
-    if (item == NULL) return NULL;
-
-    if (item->targetSymbol != expectedItem->targetSymbol) return traverseItems(item->next, expectedItem);
-
-    ProductionRule *expectedRule = expectedItem->production;
-    ProductionRule *rule = item->production;
-    while (expectedRule != NULL && rule != NULL) {
-        if (rule->nonTerminal != expectedRule->nonTerminal || rule->dot_pos != expectedRule->dot_pos) {
-            return traverseItems(item->next, expectedItem);
-        }
-        symbol expectedSym = 0;
-        symbol sym = 0;
-        int i = 0;
-        bool same = true; // temporary
-        while (((sym = rule->production[i]) != END_SYMBOL_ARRAY
-                && expectedSym == expectedRule->production[i]) != END_SYMBOL_ARRAY) {
-            if (sym != expectedSym) {
-                same = false;
-                break;
+        bool found = true;
+        ProductionRule *expectedRule = expectedItem->production;
+        while (expectedRule != NULL) {
+            found = false;
+            ProductionRule *rule = item->production;
+            while (rule != NULL) {
+                if (rule->id == expectedRule->id) {
+                    found = true;
+                    break;
+                }
+                rule = rule->next;
             }
-            i++;
+            if (!found) break;
+            expectedRule = expectedRule->next;
         }
-        if (same) return item;
 
-        expectedRule = expectedRule->next;
-        rule = rule->next;
+        if (found) return item;
+
+        for (int i = 0; i < item->offset_inheritingItems; i++) {
+            stack[++top] = item->inheritingItems[i];
+        }
     }
 
-    if (expectedRule == NULL && rule == NULL) return item;
-    else return traverseItems(item->next, expectedItem);
+    return NULL;
 }
-*/
+
 symbol *getTargetSymbol(ProductionRule *prod) {
     int len_existenceArr = 50;
     int reviser = len_existenceArr / 2;

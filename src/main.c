@@ -5,7 +5,7 @@ int main() {
 
     processSyntaxTxt(path);
     
-    showProductionRules();
+    //showProductionRules();
 
     //printMapping_Non_Terminal();
 

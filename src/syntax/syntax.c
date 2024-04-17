@@ -37,7 +37,6 @@ void processSyntaxTxt(char *file_path) {
     while (fgets(line, sizeof(line), file) != NULL) {
         cur = tokenizeLine(line, cur);
     }
-    printTokenList(&head);
 
     symbol left = 0;
     Token *rest = NULL;
@@ -46,8 +45,6 @@ void processSyntaxTxt(char *file_path) {
     for (Token *current = &head; current; current = current->next) {
 
         Token *next= current->next;
-
-        printf("kind: %d\n",current->kind);
 
         /** 
             @brief example sample1.txt
