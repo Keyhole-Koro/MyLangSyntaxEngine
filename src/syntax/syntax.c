@@ -84,7 +84,7 @@ static ProductionRule *constructRule(symbol left, symbol *right) {
     int sym = 0;
     int i = -1;
     while ((sym = rule->production[++i]) != END_SYMBOL_ARRAY) {}
-    rule->len_prod = i;
+    rule->numProd = i;
     return rule;
 }
 
@@ -101,9 +101,9 @@ static void registerSyntax(symbol left, symbol *right) {
     }
 }
 symbol *processRightBuffer(Token *cur, Token **rest) {
-    int len_right = 5;
+    int maxRight = 5;
     int num_tk = 0;
-    symbol *newRight = malloc(len_right * sizeof(symbol));
+    symbol *newRight = malloc(maxRight * sizeof(symbol));
     newRight[0] = END_SYMBOL_ARRAY;
     Token *current;
     for (current = cur; current->next; current = current->next) {
@@ -111,9 +111,9 @@ symbol *processRightBuffer(Token *cur, Token **rest) {
     	
         if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
 
-        if (num_tk + 1 > len_right) {
-            len_right *= 2;
-            newRight = realloc(newRight, len_right * sizeof(symbol));
+        if (num_tk + 1 > maxRight) {
+            maxRight *= 2;
+            newRight = realloc(newRight, maxRight * sizeof(symbol));
         }
 
         newRight[num_tk++] = current->kind == TERMINAL ? 
@@ -133,7 +133,7 @@ void showProductionRules() {
         printf("----\n");
         printf("id: %d\n", current->id);
         printf("nonTerminal: %d\n", current->nonTerminal);
-        printf("length of production: %d\n", current->len_prod);
+        printf("the number of elements of production: %d\n", current->numProd);
         printf("production:");
         symbol sym = 0; // initialization
         int i = 0;

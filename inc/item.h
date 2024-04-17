@@ -6,8 +6,8 @@
 typedef struct Item {
     ProductionRule *production;
     symbol targetSymbol;
-    int offset_inheritingItems;
-    int len_inheritingItems;
+    int numInheritingItems;
+    int maxInheritingItems;
     struct Item **inheritingItems;
 } Item;
 

@@ -15,9 +15,9 @@
 typedef struct ProductionRule ProductionRule;
 
 struct ProductionRule {
-    unsigned int id;
+    int id;
     symbol nonTerminal; // left
-    int len_prod;
+    int numProd;
     symbol *production; // right
     int dot_pos;
     ProductionRule *next;
