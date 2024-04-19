@@ -14,10 +14,13 @@ void addInheritingItem(Item *item, Item *inheritingItem);
 Item *findItem(ProductionRule *production, symbol targetSymbol);
 Item *findItemInSubItems(Item *item, Item *expectedItem);
 Item *traverseItems(Item *item, Item *expectedItem);
-symbol *extractTargetSymbols(ProductionRule *production);
-symbol readNextSymbol(ProductionRule *rule);
-ProductionRule *filterRulesBySymbol(symbol expectedSymbol);
-ProductionRule *copyProductionRule(ProductionRule *rule);
+symbol *readSymbols(ProductionRule *production);
+symbol consumeSymbol(ProductionRule *rule);
+ProductionRule *filterRulesBySymbol(ProductionRule *rulesHasExisted, symbol expectedSymbol);
+ProductionRule *cloneProduction(ProductionRule *prod);
+ProductionRule *cloneProductionRule(ProductionRule *rule);
+ProductionRule *combineProds(ProductionRule **prod1, ProductionRule **prod2);
+bool isEndOfItem(Item *item);
 
 Item *constructItem() {
     if (entryProduction.id == UNSET_ID) {
@@ -31,47 +34,74 @@ Item *constructItem() {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
-    entryItem->production = copyProductionRule(&entryProduction);
+    entryItem->production = &entryProduction;
 
     constructSubItem(entryItem);
 
     return entryItems;
 }
 
+#include <unistd.h>
+
 Item *constructSubItem(Item *item) {
+    if (isEndOfItem(item)) printf("End Of Item\n");
+    if (isEndOfItem(item)) return NULL; 
     if (!entryItems) entryItems = item;
 
-    symbol *targetSymbols = extractTargetSymbols(item->production);
+    printf("---------\n");
+    printf("num of item: %d\n", numItems);
+    printf("1\n");
 
+    ProductionRule *clonedProd = cloneProduction(item->production);
+
+    symbol *targetSymbols = readSymbols(clonedProd);
+    
+    printf("2\n");
     int i = 0;
     symbol sym = 0;
-    while ((sym = targetSymbols[i]) != END_SYMBOL_ARRAY) {
-        ProductionRule *gatheredRules = filterRulesBySymbol(sym);
 
-        Item *foundItem = findItem(gatheredRules, sym);
+    while ((sym = targetSymbols[i++]) != END_SYMBOL_ARRAY) {
+        printf("sym: %d\n", sym);
+    }
+    i = 0;
+    while ((sym = targetSymbols[i++]) != END_SYMBOL_ARRAY) {
+        printf("10\n");
+        sleep(1);
+
+        ProductionRule *extractedRules = filterRules(clonedProd, cmpCurSymbol);
+        ProductionRule *gatheredRules = filterRules(entryProduction, cmpLeft);
+        ProductionRule *eliminatedRules = eliminateProds(gatheredRules, extractedRules, cmpId);
+
+        ProductionRule *allItemNeeded = combineProds(extractedRules, gatheredRules);
+
+        printf("3\n");
+        Item *foundItem = findItem(clonedProd, sym);
         if (foundItem) {
             addInheritingItem(item, foundItem);
             continue;
         }
-
+        printf("4\n");
         Item *newItem = malloc(sizeof(Item));
         if (!newItem) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
+        printf("5\n");
         numItems++;
         newItem->targetSymbol = sym;
-        newItem->production = gatheredRules;
+        newItem->production = clonedProd;
+        newItem->numInheritingItems = 0;
         newItem->maxInheritingItems = 5;
         newItem->inheritingItems = calloc(newItem->maxInheritingItems, sizeof(Item *));
         if (!newItem->inheritingItems) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
+        printf("6\n");
         constructSubItem(newItem);
+        printf("7\n");
         addInheritingItem(item, newItem);
-
-        i++;
+        printf("8\n");
     }
     
     free(targetSymbols);
@@ -79,18 +109,38 @@ Item *constructSubItem(Item *item) {
 }
 
 void addInheritingItem(Item *item, Item *inheritingItem) {
+    printf("71\n");
+    printf("%d %d\n", item->numInheritingItems, item->maxInheritingItems);
     if (item->numInheritingItems >= item->maxInheritingItems) {
-        item->maxInheritingItems *= 2;
-        item->inheritingItems = realloc(item->inheritingItems, item->maxInheritingItems * sizeof(Item *));
+        printf("72\n");
+        item->inheritingItems = realloc(item->inheritingItems, (item->maxInheritingItems *= 2) * sizeof(Item *));
+        printf("73\n");
         if (!item->inheritingItems) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
+        printf("74\n");
         for (int j = item->numInheritingItems; j < item->maxInheritingItems; j++) {
             item->inheritingItems[j] = NULL;
         }
     }
+    printf("75\n");
     item->inheritingItems[item->numInheritingItems++] = inheritingItem;
+}
+
+ProductionRule *combineProds(ProductionRule **prod1, ProductionRule **prod2) {
+    ProductionRule *entry = *prod1;
+    while ((*prod1)->next) {
+        *prod1 = (*prod1)->next;
+    }
+    (*prod1)->next = *prod2;
+    return entry;
+}
+
+bool isEndOfItem(Item *item) {
+    ProductionRule *prod = item->production;
+    return (item->numInheritingItems == 1
+        && prod->numSymbols == prod->dotPos + 1);
 }
 
 Item *findItem(ProductionRule *production, symbol targetSymbol) {
@@ -136,9 +186,12 @@ Item *findItemInSubItems(Item *item, Item *expectedItem) {
     return NULL;
 }
 
-symbol *extractTargetSymbols(ProductionRule *prod) {
-    int existenceArrLength = 50;
-    int reviser = existenceArrLength / 2;
+#include <math.h>
+#define ReviseOffset(n) (n + abs(number_nonTerminal))
+
+// messy
+symbol *readSymbols(ProductionRule *prod) {
+    int existenceArrLength = abs(number_nonTerminal) + number_Terminal;
     bool symbolExistenceArray[existenceArrLength];
     for (int i = 0; i < existenceArrLength; i++) {
         symbolExistenceArray[i] = false;
@@ -149,25 +202,17 @@ symbol *extractTargetSymbols(ProductionRule *prod) {
     symbol *symbols = malloc(symArrayLength * sizeof(symbol));
     symbols[0] = END_SYMBOL_ARRAY;
     for  (ProductionRule *rule = prod; rule; rule = rule->next) {
-        symbol readSym = readNextSymbol(rule);
-        int revisedOffset = reviser + readSym;
-        if (revisedOffset >= 0 && revisedOffset < existenceArrLength) {
-            if (symbolExistenceArray[revisedOffset]) continue;
-            symbolExistenceArray[revisedOffset] = true;
-        } else {
-            bool found = false;
-            for (int j = 0; j < numSymbols; j++) {
-                if (symbols[j] == readSym) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) continue;
-        }
+        printf("rule id: %d target symbols: %d num of symbols: %d dot pos: %d\n", rule->id, rule->production[rule->dotPos], rule->numSymbols, rule->dotPos);
+        if (rule->numSymbols == rule->dotPos) continue;
+
+        symbol readSym = consumeSymbol(rule);
+
+        int revisedOffset = ReviseOffset(readSym);
+        if (symbolExistenceArray[revisedOffset]) continue;
+        symbolExistenceArray[revisedOffset] = true;
 
         if (numSymbols + 1 > symArrayLength) {
-            symArrayLength *= 2;
-            symbols = realloc(symbols, symArrayLength * sizeof(symbol));
+            symbols = realloc(symbols, (symArrayLength *= 2) * sizeof(symbol));
             if (!symbols) {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(EXIT_FAILURE);
@@ -181,31 +226,63 @@ symbol *extractTargetSymbols(ProductionRule *prod) {
     return symbols;
 }
 
-symbol readNextSymbol(ProductionRule *rule) {
+symbol consumeSymbol(ProductionRule *rule) {
+    if (rule->dotPos > rule->numSymbols) {
+        fprintf(stderr, "Out Of Production\n");
+        exit(EXIT_FAILURE);
+    }
     return rule->production[rule->dotPos++];
 }
 
-ProductionRule *filterRulesBySymbol(symbol expectedSymbol) {
+// compare speeds of this and nested for
+ProductionRule *filterRulesBySymbol(ProductionRule *rulesHasExisted, symbol expectedSymbol) {
+    bool overlapCheckArray[curLatestId];
+
+    for (int i = 0; i < curLatestId; i++) {
+        overlapCheckArray[i] = false;
+    }
+
+    for (ProductionRule *existedRule = rulesHasExisted; existedRule; existedRule = existedRule->next) {
+        overlapCheckArray[existedRule->id] = true;
+    }
+
     ProductionRule *startRule = NULL;
     ProductionRule **ppRule = &startRule;
 
     for (ProductionRule *rule = prod_rules; rule; rule = rule->next) {
+        if (overlapCheckArray[rule->id]) continue;
         if (rule->nonTerminal == expectedSymbol) {
-            *ppRule = copyProductionRule(rule);
+            ProductionRule *copy = cloneProductionRule(rule);
+            copy->dotPos = 0;
+            *ppRule = copy;
             ppRule = &((*ppRule)->next);
         }
     }
     return startRule;
 }   
 
-ProductionRule *copyProductionRule(ProductionRule *rule) {
+ProductionRule *cloneProduction(ProductionRule *prod) {
+    ProductionRule *current = prod;
+    ProductionRule *entry_clonedProd = cloneProductionRule(current);
+    ProductionRule *copied_prod = entry_clonedProd;
+
+    while (current->next) {
+        current = current->next;
+        copied_prod->next = cloneProductionRule(current);
+        copied_prod = copied_prod->next;
+    }
+
+    return entry_clonedProd;
+}
+
+
+ProductionRule *cloneProductionRule(ProductionRule *rule) {
     ProductionRule *copy = malloc(sizeof(ProductionRule));
     if (!copy) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
     memcpy(copy, rule, sizeof(ProductionRule));
-    copy->dotPos = 0;
     copy->next = NULL;
     return copy;
 }

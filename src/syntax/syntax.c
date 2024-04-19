@@ -3,13 +3,13 @@
 #define IS_TERMINAL 1
 #define IS_NONTERMINAL 0
 
-static int curId = 0;
+curLatestId = 0;
 
 static ProductionRule *constructRule(symbol left, symbol *right);
 static void registerSyntax(symbol left, symbol *right);
 static symbol *processRightBuffer(Token *cur, Token **rest);
 
-void processSyntaxTxt(char *file_path) {
+ProductionRule *processSyntaxTxt(char *file_path) {
     FILE *file = fopen(file_path, "r");
     if (file == NULL) {
         fprintf(stderr, "Failed to open file %s\n", file_path);
@@ -55,7 +55,7 @@ void processSyntaxTxt(char *file_path) {
             continue;
         }
     }
-
+    return prod_rules;
 }
 
 static ProductionRule *constructRule(symbol left, symbol *right) {
@@ -64,7 +64,7 @@ static ProductionRule *constructRule(symbol left, symbol *right) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
-    rule->id = curId++;
+    rule->id = curLatestId++;
     rule->nonTerminal = left;
     rule->production = right;
     rule->dotPos = 0;
@@ -102,8 +102,7 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
         if (current->kind == NEWLINE) break;
         if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
         if (numTk + 1 > maxRight) {
-            maxRight *= 2;
-            newRight = realloc(newRight, maxRight * sizeof(symbol));
+            newRight = realloc(newRight, (maxRight *= 2) * sizeof(symbol));
             if (!newRight) {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(EXIT_FAILURE);
@@ -123,7 +122,7 @@ void showProductionRules() {
         printf("----\n");
         printf("ID: %d\n", current->id);
         printf("Non-Terminal: %d\n", current->nonTerminal);
-        printf("Number of Productions: %d\n", current->numSymbols);
+        printf("Number of Elements of Productions: %d\n", current->numSymbols);
         printf("Production:");
         int i = 0;
         while (current->production[i] != END_SYMBOL_ARRAY) {

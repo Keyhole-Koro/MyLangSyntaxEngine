@@ -3,9 +3,12 @@
 int main() {
     char *path = "./syntaxSamples/sample1.txt";
 
-    processSyntaxTxt(path);
+    ProductionRule *prods = processSyntaxTxt(path);
     
     showProductionRules();
+
+    setEntry(prods);
+    constructItem();
 
     //printMapping_Non_Terminal();
 

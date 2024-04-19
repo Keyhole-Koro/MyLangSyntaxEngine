@@ -8,6 +8,8 @@
 #include "stringMapper.h"
 #include "utils.h"
 
+extern int curLatestId;
+
 /** @brief Use 0 to indicate an end of the array */
 #define END_SYMBOL_ARRAY (0)
 
@@ -24,7 +26,7 @@ struct ProductionRule {
 
 extern ProductionRule *prod_rules;
 
-void processSyntaxTxt(char *file_path);
+ProductionRule *processSyntaxTxt(char *file_path);
 void showProductionRules();
 
 /** @brief Terms

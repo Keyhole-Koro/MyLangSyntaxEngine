@@ -10,6 +10,9 @@
 #include "symbol.h"
 #include "utils.h"
 
+extern int number_nonTerminal;
+extern int number_Terminal;
+
 /**
     @brief This method enables to find string efficiently,
     by using number but string, calculation of comparing is improved 

@@ -5,5 +5,6 @@
 
 #include "syntax.h"
 #include "stringMapper.h"
+#include "item.h"
 
 #endif
