@@ -10,17 +10,27 @@ Item *entryItems = NULL;
 int numItems = 0;
 
 Item *constructSubItem(Item *item);
+
 void addInheritingItem(Item *item, Item *inheritingItem);
+
 Item *findItem(ProductionRule *production, symbol targetSymbol);
 Item *findItemInSubItems(Item *item, Item *expectedItem);
-Item *traverseItems(Item *item, Item *expectedItem);
+
 symbol *readSymbols(ProductionRule *production);
 symbol consumeSymbol(ProductionRule *rule);
-ProductionRule *filterRulesBySymbol(ProductionRule *rulesHasExisted, symbol expectedSymbol);
+
 ProductionRule *cloneProduction(ProductionRule *prod);
 ProductionRule *cloneProductionRule(ProductionRule *rule);
+
+ProductionRule *filterRules(ProductionRule *sourceProd, bool (*referMethod)(ProductionRule*), int expectedValue);
 ProductionRule *combineProds(ProductionRule **prod1, ProductionRule **prod2);
+void eliminateProds(ProductionRule *eliminatedProd, bool (referMethod)(ProductionRule*), ProductionRule *referredProd);
+
 bool isEndOfItem(Item *item);
+
+bool referId(ProductionRule *prod);
+bool referCurSymbol(ProductionRule *prod);
+bool referLeft(ProductionRule *prod);
 
 Item *constructItem() {
     if (entryProduction.id == UNSET_ID) {
@@ -68,11 +78,11 @@ Item *constructSubItem(Item *item) {
         printf("10\n");
         sleep(1);
 
-        ProductionRule *extractedRules = filterRules(clonedProd, cmpCurSymbol);
-        ProductionRule *gatheredRules = filterRules(entryProduction, cmpLeft);
-        ProductionRule *eliminatedRules = eliminateProds(gatheredRules, extractedRules, cmpId);
+        ProductionRule *extractedRules = filterRules(clonedProd, referCurSymbol, sym);
+        ProductionRule *gatheredRules = filterRules(&entryProduction, referLeft, sym);
+        ProductionRule *eliminatedRules = eliminateProds(gatheredRules, referId, extractedRules);
 
-        ProductionRule *allItemNeeded = combineProds(extractedRules, gatheredRules);
+        ProductionRule *allItemNeeded = combineProds(&extractedRules, &gatheredRules);
 
         printf("3\n");
         Item *foundItem = findItem(clonedProd, sym);
@@ -126,6 +136,10 @@ void addInheritingItem(Item *item, Item *inheritingItem) {
     }
     printf("75\n");
     item->inheritingItems[item->numInheritingItems++] = inheritingItem;
+}
+
+void eliminateProds(ProductionRule *eliminatedProd, bool (referMethod)(ProductionRule*), ProductionRule *referredProd) {
+    
 }
 
 ProductionRule *combineProds(ProductionRule **prod1, ProductionRule **prod2) {
@@ -234,29 +248,37 @@ symbol consumeSymbol(ProductionRule *rule) {
     return rule->production[rule->dotPos++];
 }
 
+bool referId(ProductionRule *prod) {
+    return prod->id;
+}
+
+bool referCurSymbol(ProductionRule *prod) {
+    return prod->production[prod->dotPos];
+}
+
+bool referLeft(ProductionRule *prod) {
+    return prod->nonTerminal;
+}
+
 // compare speeds of this and nested for
-ProductionRule *filterRulesBySymbol(ProductionRule *rulesHasExisted, symbol expectedSymbol) {
+ProductionRule *filterRules(ProductionRule *sourceProd, bool (*referMethod)(ProductionRule*), int expectedValue) {
     bool overlapCheckArray[curLatestId];
 
     for (int i = 0; i < curLatestId; i++) {
         overlapCheckArray[i] = false;
     }
 
-    for (ProductionRule *existedRule = rulesHasExisted; existedRule; existedRule = existedRule->next) {
-        overlapCheckArray[existedRule->id] = true;
-    }
-
     ProductionRule *startRule = NULL;
     ProductionRule **ppRule = &startRule;
 
-    for (ProductionRule *rule = prod_rules; rule; rule = rule->next) {
+    for (ProductionRule *rule = sourceProd; rule; rule = rule->next) {
+        if (referMethod(rule) != expectedValue) continue;
         if (overlapCheckArray[rule->id]) continue;
-        if (rule->nonTerminal == expectedSymbol) {
-            ProductionRule *copy = cloneProductionRule(rule);
-            copy->dotPos = 0;
-            *ppRule = copy;
-            ppRule = &((*ppRule)->next);
-        }
+        overlapCheckArray[rule->id] = true;
+        ProductionRule *copy = cloneProductionRule(rule);
+        copy->dotPos = 0;
+        *ppRule = copy;
+        ppRule = &((*ppRule)->next);
     }
     return startRule;
 }   
