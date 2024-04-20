@@ -3,7 +3,7 @@
 #define IS_TERMINAL 1
 #define IS_NONTERMINAL 0
 
-curLatestId = 0;
+latestProdId = 0;
 
 static ProductionRule *constructRule(symbol left, symbol *right);
 static void registerSyntax(symbol left, symbol *right);
@@ -54,6 +54,8 @@ ProductionRule *processSyntaxTxt(char *file_path) {
 
             continue;
         }
+
+    setStringExchange();
     }
     return prod_rules;
 }
@@ -64,7 +66,7 @@ static ProductionRule *constructRule(symbol left, symbol *right) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
-    rule->id = curLatestId++;
+    rule->id = latestProdId++;
     rule->nonTerminal = left;
     rule->production = right;
     rule->dotPos = 0;
@@ -121,12 +123,12 @@ void showProductionRules() {
     while (current) {
         printf("----\n");
         printf("ID: %d\n", current->id);
-        printf("Non-Terminal: %d\n", current->nonTerminal);
+        printf("Non-Terminal: %s\n", exchangeSymbol(current->nonTerminal));
         printf("Number of Elements of Productions: %d\n", current->numSymbols);
         printf("Production:");
         int i = 0;
         while (current->production[i] != END_SYMBOL_ARRAY) {
-            printf(" %d", current->production[i++]);
+            printf(" %s", exchangeSymbol(current->production[i++]));
         }
         printf("\n");
         current = current->next;

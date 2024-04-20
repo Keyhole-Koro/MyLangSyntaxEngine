@@ -8,7 +8,7 @@
 #include "stringMapper.h"
 #include "utils.h"
 
-extern int curLatestId;
+extern int latestProdId;
 
 /** @brief Use 0 to indicate an end of the array */
 #define END_SYMBOL_ARRAY (0)

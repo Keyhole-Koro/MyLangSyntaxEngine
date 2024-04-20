@@ -20,7 +20,7 @@ extern int number_Terminal;
 
 typedef struct StringMapping {
     char *string;
-    int number;
+    symbol number;
     struct StringMapping *next;
 } StringMapping;
 
@@ -31,4 +31,7 @@ symbol mapString(char *str, bool isTerminal);
 
 void printMapping_Termianl();
 void printMapping_Non_Termianl();
+
+void setStringExchange();
+char *exchangeSymbol(symbol sym);
 #endif

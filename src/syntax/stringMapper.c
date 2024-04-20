@@ -83,3 +83,19 @@ void printMapping_Non_Terminal() {
         current = current->next;
     }
 }
+
+char **symStringMap;
+#define ReviseOffset(n) (n + abs(number_nonTerminal))
+void setStringExchange() {
+    symStringMap = calloc(ReviseOffset(number_Terminal), sizeof(char*));
+    for (StringMapping *mapping = &mappings_nonTerminal; mapping; mapping = mapping->next) {
+        symStringMap[ReviseOffset(mapping->number)] = mapping->string;
+    }
+    for (StringMapping *mapping = &mappings_terminal; mapping; mapping = mapping->next) {
+        symStringMap[ReviseOffset(mapping->number)] = mapping->string;
+    }
+}
+
+char *exchangeSymbol(symbol sym) {
+    return symStringMap[ReviseOffset(sym)];
+}
