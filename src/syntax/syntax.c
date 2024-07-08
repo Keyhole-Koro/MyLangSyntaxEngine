@@ -3,7 +3,7 @@
 #define IS_TERMINAL 1
 #define IS_NONTERMINAL 0
 
-latestProdId = 0;
+int latestProdId = 0;
 
 static ProductionRule *constructRule(symbol left, symbol *right);
 static void registerSyntax(symbol left, symbol *right);

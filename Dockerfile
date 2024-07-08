@@ -1,15 +1,16 @@
 FROM ubuntu:latest
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && \
-    apt-get install -y \
+RUN sed -i 's@archive.ubuntu.com@ftp.jaist.ac.jp/pub/Linux@g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     make \
+    cmake \
     clang \
+    gcc \
     git \
     lld \
-    && rm -rf /var/lib/apt/lists/*
-
-SHELL ["/bin/bash", "-c"]
-
-WORKDIR /workspace
+    nasm \
+    gdb \
+    tree && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*

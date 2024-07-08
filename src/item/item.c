@@ -13,11 +13,12 @@ Item *constructSubItem(Item *item);
 
 void addInheritingItem(Item *item, Item *inheritingItem);
 
-Item *findItem(ProductionRule *production, symbol targetSymbol);
-Item *findItemInSubItems(Item *item, Item *expectedItem);
+Item *lookForItem(ProductionRule *production, symbol targetSymbol);
+Item *lookForItemInSubItems(Item *item, Item *expectedItem);
 
-symbol *readSymbols(ProductionRule *production);
+symbol *extractTargetSymbols(ProductionRule *production);
 symbol consumeSymbol(ProductionRule *rule);
+void readCurSymbols(ProductionRule *prod);
 
 ProductionRule *cloneProduction(ProductionRule *prod);
 ProductionRule *cloneProductionRule(ProductionRule *rule);
@@ -63,29 +64,37 @@ Item *constructSubItem(Item *item) {
     if (!entryItems) entryItems = item;
 
     printf("---------\n");
-    printf("num of item: %d\n", numItems);
+    printf("the number of item: %d\n", numItems);
 
     ProductionRule *clonedProd = cloneProduction(item->production);
-
-    symbol *targetSymbols = readSymbols(clonedProd);
     
+    // extract current symbols from clonedProd, eliminating overlapping symbols
+    symbol *targetSymbols = extractTargetSymbols(clonedProd);
+
     int i = 0;
     symbol sym = 0;
 
     while ((sym = targetSymbols[i++]) != END_SYMBOL_ARRAY) {
         sleep(1);
 
-        printf("target sym: %d\n", sym);
-        ProductionRule *extractedRules = filterRules(clonedProd, referCurSymbol, sym);
+        printf(">next target symbol: %s\n", exchangeSymbol(sym));
+
+        // filters rules by a target symbol of targetSymbols
+        ProductionRule *filteredRules = filterRules(clonedProd, referCurSymbol, sym);
         ProductionRule *gatheredRules = NULL;
-        if (!isTerminal(sym)) gatheredRules = filterRules(&entryProduction, referLeft, sym);
-        eliminateOverlapRules(&gatheredRules, extractedRules);
 
-        if (!extractedRules && !gatheredRules) return NULL;
+        if (!isTerminal(sym)) /*skip filtering since no rules have terminal on the left side*/
+            gatheredRules = filterRules(&entryProduction, referLeft, sym);
+        //eliminateOverlapRules(&gatheredRules, filteredRules);
 
-        ProductionRule *allItemNeeded = combineProds(gatheredRules, extractedRules);
+        if (!filteredRules && !gatheredRules) continue;
 
-        Item *foundItem = findItem(allItemNeeded, sym);
+        // if prods from each args, filteredRules will be prioritized
+        ProductionRule *allItemNeeded = combineProds(gatheredRules, filteredRules);
+
+        // look for item to avoid making existing itemsh
+        // the second arg, sym is used to avoid excess comparing
+        Item *foundItem = lookForItem(allItemNeeded, sym);
         if (foundItem) {
             addInheritingItem(item, foundItem);
             continue;
@@ -101,16 +110,17 @@ Item *constructSubItem(Item *item) {
         newItem->production = allItemNeeded;
         newItem->targetSymbol = sym;
         newItem->numInheritingItems = 0;
-        newItem->maxInheritingItems = 6;
+        newItem->maxInheritingItems = 6;/*just ramdom*/
         newItem->inheritingItems = calloc(newItem->maxInheritingItems, sizeof(Item *));
         if (!newItem->inheritingItems) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
-
-        constructSubItem(newItem);
+        readCurSymbols(allItemNeeded);
 
         addInheritingItem(item, newItem);
+
+        constructSubItem(newItem);
         
     }
     
@@ -119,8 +129,6 @@ Item *constructSubItem(Item *item) {
 }
 
 void addInheritingItem(Item *item, Item *inheritingItem) {
-    printf("71\n");
-    printf("%d %d\n", item->numInheritingItems, item->maxInheritingItems);
     if (item->numInheritingItems > item->maxInheritingItems) {
         item->inheritingItems = realloc(item->inheritingItems, (item->maxInheritingItems *= 2) * sizeof(Item *));
         if (!item->inheritingItems) {
@@ -182,7 +190,7 @@ ProductionRule *combineProds(ProductionRule *prod1, ProductionRule *prod2) {
         copy_prod1 = copy_prod1->next;
     }
 
-    copy_prod1->next = copy_prod2;
+    if (copy_prod1) copy_prod1->next = copy_prod2;
 
     return entry;
 }
@@ -193,29 +201,35 @@ bool isEndOfItem(Item *item) {
         && prod->numSymbols == prod->dotPos);
 }
 
-Item *findItem(ProductionRule *production, symbol targetSymbol) {
+Item *lookForItem(ProductionRule *production, symbol targetSymbol) {
     Item item = {production, targetSymbol, 0, 0, NULL};
-    return findItemInSubItems(entryItems, &item);
+    return lookForItemInSubItems(entryItems, &item);
 }
 
-Item *findItemInSubItems(Item *item, Item *expectedItem) {
+Item *lookForItemInSubItems(Item *item, Item *expectedItem) {
     Item *stack[numItems];
     int top = -1;
 
     stack[++top] = item;
 
     while (top >= 0) {
+        //sleep(1);
+        printf("top %d %d\n", top, item->numInheritingItems);
         item = stack[top--];
 
+        
+        printf("cmp target symbol %s, %s\n", exchangeSymbol(item->targetSymbol), exchangeSymbol(expectedItem->targetSymbol));
         if (item->targetSymbol != expectedItem->targetSymbol) continue;
 
         bool found = true;
         ProductionRule *expectedRule = expectedItem->production;
 
         while (expectedRule) {
+            //sleep(1);
             found = false;
             ProductionRule *rule = item->production;
             while (rule) {
+                printf("cmp id %d, %d\n", rule->id, expectedRule->id);
                 if (rule->id == expectedRule->id) {
                     found = true;
                     break;
@@ -227,10 +241,10 @@ Item *findItemInSubItems(Item *item, Item *expectedItem) {
         }
 
         if (found) return item;
+    }
 
-        for (int i = 0; i < item->numInheritingItems; i++) {
-            stack[++top] = item->inheritingItems[i];
-        }
+    for (int i = 0; i < item->numInheritingItems; i++) {
+        stack[++top] = item->inheritingItems[i];
     }
 
     return NULL;
@@ -240,7 +254,7 @@ Item *findItemInSubItems(Item *item, Item *expectedItem) {
 #define ReviseOffset(n) (n + abs(number_nonTerminal))
 
 // messy
-symbol *readSymbols(ProductionRule *prod) {
+symbol *extractTargetSymbols(ProductionRule *prod) {
     int existenceArrLength = abs(number_nonTerminal) + number_Terminal;
     bool symbolExistenceArray[existenceArrLength];
     for (int i = 0; i < existenceArrLength; i++) {
@@ -253,9 +267,9 @@ symbol *readSymbols(ProductionRule *prod) {
     symbols[0] = END_SYMBOL_ARRAY;
     for  (ProductionRule *rule = prod; rule; rule = rule->next) {
         printf("rule id: %d, target symbols: '%s', Num of Symbols: %d, dot pos: %d\n", rule->id, exchangeSymbol(rule->production[rule->dotPos]), rule->numSymbols, rule->dotPos);
-        if (rule->numSymbols == rule->dotPos) continue;
+        if (rule->dotPos >= rule->numSymbols) continue;
 
-        symbol readSym = consumeSymbol(rule);
+        symbol readSym = rule->production[rule->dotPos];
 
         int revisedOffset = ReviseOffset(readSym);
         if (symbolExistenceArray[revisedOffset]) continue;
@@ -274,6 +288,13 @@ symbol *readSymbols(ProductionRule *prod) {
     symbols[numSymbols] = END_SYMBOL_ARRAY;
     
     return symbols;
+}
+
+void readCurSymbols(ProductionRule *prod) {
+    for (ProductionRule *rule = prod; rule; rule = rule->next) {
+        if (rule->dotPos < rule->numSymbols)
+        rule->dotPos++;
+    }
 }
 
 symbol consumeSymbol(ProductionRule *rule) {
@@ -303,11 +324,11 @@ ProductionRule *filterRules(ProductionRule *sourceProd, int (*referMethod)(Produ
     ProductionRule **ppRule = &startRule;
 
     for (ProductionRule *rule = sourceProd; rule; rule = rule->next) {
+        if (rule->dotPos >= rule->numSymbols) continue;
         if (referMethod(rule) != expectedValue) continue;
         if (overlapCheckArray[rule->id]) continue;
         overlapCheckArray[rule->id] = true;
         ProductionRule *copy = cloneProductionRule(rule);
-        if (!startRule) startRule = copy;
         *ppRule = copy;
         ppRule = &((*ppRule)->next);
     }

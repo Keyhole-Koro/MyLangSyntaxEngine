@@ -3,6 +3,8 @@
 
 #include "syntax.h"
 
+#include "stringMapper.h"
+
 typedef struct Item {
     ProductionRule *production;
     symbol targetSymbol;

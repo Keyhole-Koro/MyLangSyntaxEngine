@@ -2,8 +2,8 @@
 
 bool is_terminal = true;
 
-number_nonTerminal = -1;
-number_Terminal = 1;
+int number_nonTerminal = -1;
+int number_Terminal = 1;
 
 int current_num_strmap = 0;
 int max_size_strmap = 32;
