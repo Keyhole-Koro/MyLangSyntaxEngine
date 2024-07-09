@@ -4,16 +4,19 @@
 #include "syntax.h"
 
 #include "stringMapper.h"
+#include "existanceArray.h"
+#include "production.h"
 
-typedef struct Item {
+typedef struct LR1Item {
+    int stateId;
     ProductionRule *production;
-    symbol targetSymbol;
-    int numInheritingItems;
-    int maxInheritingItems;
-    struct Item **inheritingItems;
-} Item;
+    symbol lookahead;
+    int numGotoItems;
+    int maxGotoItems;
+    struct LR1Item **gotoItems;
+} LR1Item;
 
-void setEntry(ProductionRule *entryRule);
-Item *constructItem();
+void setStartRule(const ProductionRule *entryRule);
+LR1Item *constructInitialItemSet();
 
 #endif

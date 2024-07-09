@@ -3,6 +3,8 @@
 #define IS_TERMINAL 1
 #define IS_NONTERMINAL 0
 
+ProductionRule *prod_rules;
+
 int latestProdId = 0;
 
 static ProductionRule *constructRule(symbol left, symbol *right);
@@ -135,4 +137,8 @@ void showProductionRules() {
     }
     printf("----\n");
 
+}
+
+int getNumProductionRuleSets() {
+    return latestProdId;
 }

@@ -3,12 +3,12 @@
 int main() {
     char *path = "./syntaxSamples/sample1.txt";
 
-    ProductionRule *prods = processSyntaxTxt(path);
+    const ProductionRule *prods = processSyntaxTxt(path);
     
     showProductionRules();
 
-    setEntry(prods);
-    constructItem();
+    setStartRule(prods);
+    constructInitialItemSet();
 
     //printMapping_Non_Terminal();
 

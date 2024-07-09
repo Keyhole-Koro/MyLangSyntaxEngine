@@ -1,4 +1,5 @@
-expression    : term
+expression    : expression end
+              | term
               | expression '+' term
               | expression '-' term
 

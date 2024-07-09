@@ -10,8 +10,8 @@
 #include "symbol.h"
 #include "utils.h"
 
-extern int number_nonTerminal;
-extern int number_Terminal;
+extern int id_nonTerminal;
+extern int id_Terminal;
 
 /**
     @brief This method enables to find string efficiently,
@@ -34,4 +34,9 @@ void printMapping_Non_Termianl();
 
 void setStringExchange();
 char *exchangeSymbol(symbol sym);
+
+bool isTerminal(symbol sym);
+
+bool isNonTerminal(symbol sym);
+
 #endif

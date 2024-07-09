@@ -2,8 +2,8 @@
 
 bool is_terminal = true;
 
-int number_nonTerminal = -1;
-int number_Terminal = 1;
+int id_nonTerminal = -1;
+int id_Terminal = 1;
 
 int current_num_strmap = 0;
 int max_size_strmap = 32;
@@ -46,7 +46,7 @@ StringMapping *registerStringMapping(const char *str) {
         exit(EXIT_FAILURE);
     }
 
-    new_mapping->number = is_terminal ? number_Terminal++ : number_nonTerminal--;
+    new_mapping->number = is_terminal ? id_Terminal++ : id_nonTerminal--;
     new_mapping->next = NULL;
 
     StringMapping **ppCurrent = &target_mappings;
@@ -85,9 +85,9 @@ void printMapping_Non_Terminal() {
 }
 
 char **symStringMap;
-#define ReviseOffset(n) (n + abs(number_nonTerminal))
+#define ReviseOffset(n) (n + abs(id_nonTerminal))
 void setStringExchange() {
-    symStringMap = calloc(ReviseOffset(number_Terminal), sizeof(char*));
+    symStringMap = calloc(ReviseOffset(id_Terminal), sizeof(char*));
     for (StringMapping *mapping = &mappings_nonTerminal; mapping; mapping = mapping->next) {
         symStringMap[ReviseOffset(mapping->number)] = mapping->string;
     }
@@ -98,4 +98,11 @@ void setStringExchange() {
 
 char *exchangeSymbol(symbol sym) {
     return symStringMap[ReviseOffset(sym)];
+}
+
+bool isTerminal(symbol sym) {
+    return sym > 0;
+}
+bool isNonTerminal(symbol sym) {
+    return sym < 0;
 }

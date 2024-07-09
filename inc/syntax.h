@@ -6,6 +6,7 @@
 #include "tokenize.h"
 #include "symbol.h"
 #include "stringMapper.h"
+#include "production.h"
 #include "utils.h"
 
 extern int latestProdId;
@@ -13,21 +14,11 @@ extern int latestProdId;
 /** @brief Use 0 to indicate an end of the array */
 #define END_SYMBOL_ARRAY (0)
 
-typedef struct ProductionRule ProductionRule;
-
-struct ProductionRule {
-    int id;
-    symbol nonTerminal; // Left side
-    int numSymbols; // the number of elements of production below
-    symbol *production; // Right side
-    int dotPos;
-    ProductionRule *next;
-};
-
 extern ProductionRule *prod_rules;
 
 ProductionRule *processSyntaxTxt(char *file_path);
 void showProductionRules();
+int getNumProductionRuleSets();
 
 /** @brief Terms
     production:
