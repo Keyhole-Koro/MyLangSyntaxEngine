@@ -1,6 +1,6 @@
 #include "existanceArray.h"
 
-ExistenceArray* createExistenceArray(int capacity, int (*reviseOffset)(int)) {
+ExistenceArray *createExistenceArray(int capacity, int (*reviseOffset)(int)) {
     ExistenceArray *exArray = malloc(sizeof(ExistenceArray));
     if (!exArray) {
         fprintf(stderr, "Memory allocation failed\n");

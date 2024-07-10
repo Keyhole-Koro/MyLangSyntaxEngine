@@ -21,10 +21,8 @@ void addGotoItem(LR1Item *item, LR1Item *gotoItem);
 LR1Item *findItemSet(ProductionRule *production, symbol lookahead);
 LR1Item *findItemInGotoSets(LR1Item *expectedItem);
 symbol *extractLookaheadSymbols(ProductionRule *production);
-symbol consumeSymbol(ProductionRule *rule);
 void advanceDot(ProductionRule *prod);
 ProductionRule *closure(ProductionRule *targetProd);
-bool isEndOfItemSet(LR1Item *item);
 
 void addLR1ItemList(LR1Item *item);
 LR1Item *findItemFromList(LR1Item *targetItem, bool (*cmpMethod)(LR1Item*, LR1Item*));
@@ -55,8 +53,6 @@ LR1Item *constructInitialItemSet() {
 }
 
 LR1Item *constructItemSet(LR1Item *item) {
-    if (isEndOfItemSet(item)) printf("End Of Item\n");
-    if (isEndOfItemSet(item)) return NULL; 
     if (!startItemSet) startItemSet = item;
 
     printf("------------------------------------\n");
@@ -69,14 +65,12 @@ LR1Item *constructItemSet(LR1Item *item) {
     symbol sym = 0;
 
     while ((sym = lookaheadSymbols[i++]) != END_SYMBOL_ARRAY) {
-        printf(">Next lookahead symbol: %s\n", exchangeSymbol(sym));
         ProductionRule *commonRules = filterProductions(clonedProd, getCurrentSymbol, sym);
         ProductionRule *closureRules = closure(commonRules);
 
         if (!commonRules && !closureRules) continue;
 
         advanceDot(commonRules);
-        //sleep(1);
        
         ProductionRule *allRequiredProductions = combineProductions(closureRules, commonRules);
         LR1Item *foundItemSet = findItemSet(allRequiredProductions, sym);
@@ -85,6 +79,7 @@ LR1Item *constructItemSet(LR1Item *item) {
             continue;
         }
 
+        printf(">Next lookahead symbol: %s\n", exchangeSymbol(sym));
         LR1Item *newItemSet = calloc(1, sizeof(LR1Item));
         if (!newItemSet) {
             fprintf(stderr, "Memory allocation failed\n");
@@ -138,11 +133,6 @@ void addGotoItem(LR1Item *item, LR1Item *gotoItem) {
         }
     }
     item->gotoItems[item->numGotoItems++] = gotoItem;
-}
-
-bool isEndOfItemSet(LR1Item *item) {
-    ProductionRule *prod = item->production;
-    return (item->numGotoItems == 1 && prod->numSymbols == prod->dotPos);
 }
 
 int list_numLR1Items = 0;

@@ -1,4 +1,4 @@
-expression    : expression end
+expression    : expression head
               | term
               | expression '+' term
               | expression '-' term
