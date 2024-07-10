@@ -27,7 +27,7 @@ ProductionRule *closure(ProductionRule *targetProd);
 bool isEndOfItemSet(LR1Item *item);
 
 void addLR1ItemList(LR1Item *item);
-LR1Item *findItemFromList(LR1Item *targetItem, bool (*referentMethod)(LR1Item*, LR1Item*));
+LR1Item *findItemFromList(LR1Item *targetItem, bool (*cmpMethod)(LR1Item*, LR1Item*));
 
 LR1Item *constructInitialItemSet() {
     if (startProductionRule.id == UNSET_ID) {
@@ -76,12 +76,11 @@ LR1Item *constructItemSet(LR1Item *item) {
         if (!commonRules && !closureRules) continue;
 
         advanceDot(commonRules);
-        sleep(1);
+        //sleep(1);
        
         ProductionRule *allRequiredProductions = combineProductions(closureRules, commonRules);
         LR1Item *foundItemSet = findItemSet(allRequiredProductions, sym);
         if (foundItemSet) {
-            printf("found!!!!!!!\n");
             addGotoItem(item, foundItemSet);
             continue;
         }
@@ -170,9 +169,9 @@ void addLR1ItemList(LR1Item *item) {
     LR1ItemList[list_numLR1Items++] = item;
 }
 
-LR1Item *findItemFromList(LR1Item *targetItem, bool (*referentMethod)(LR1Item*, LR1Item*)) {
+LR1Item *findItemFromList(LR1Item *targetItem, bool (*cmpMethod)(LR1Item*, LR1Item*)) {
     for (int i = 0; i < list_numLR1Items; i++) {
-        if (referentMethod(LR1ItemList[i], targetItem)) return LR1ItemList[i];
+        if (cmpMethod(LR1ItemList[i], targetItem)) return LR1ItemList[i];
     }
     return NULL;
 }
@@ -193,14 +192,16 @@ bool ifItemTargetExists(LR1Item *item1, LR1Item *item2) {
     }
 
     for (ProductionRule *prod = item2->production; prod; prod = prod->next) {
-        if (checkAndSetExistence(exArray, prod->id)) return false;
+        if (!checkAndSetExistence(exArray, prod->id)) {
+            freeExistenceArray(exArray);
+            return false;
+        }
     }
 
     return true;
 }
 
 LR1Item *findItemInGotoSets(LR1Item *expectedItem) {
-    
     return findItemFromList(expectedItem, ifItemTargetExists);
 }
 
