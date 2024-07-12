@@ -6,7 +6,7 @@ char *readUntil(bool (*condition)(char), char *ipt, char **rest) {
     char *buffer = (char *)malloc(sizeof(char) * buffer_size);
 
     if (buffer == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
 
@@ -25,7 +25,7 @@ char *readUntil(bool (*condition)(char), char *ipt, char **rest) {
             buffer = (char *)realloc(buffer, buffer_size * sizeof(char));
             
             if (buffer == NULL) {
-                fprintf(stderr, "Memory reallocation failed\n");
+                DEBUG_PRINT("Memory reallocation failed\n");
                 exit(EXIT_FAILURE);
             }
         }

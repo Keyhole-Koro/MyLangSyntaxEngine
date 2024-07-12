@@ -7,6 +7,6 @@ term          : factor
               | term '*' factor
               | term '/' factor
 
-factor        : NUMBER
+factor        : 'id'
               | '(' expression ')'
 

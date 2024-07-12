@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "symbol.h"
+#include "debug.h"
 
 typedef struct ProductionRule ProductionRule;
 

@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "debug.h"
+
 typedef struct {
     bool *array;
     int capacity;

@@ -29,6 +29,9 @@ typedef struct StringMapping {
 */
 symbol mapString(char *str, bool isTerminal);
 
+int getNumNonTerminal();
+int getNumTerminal();
+
 void printMapping_Termianl();
 void printMapping_Non_Termianl();
 

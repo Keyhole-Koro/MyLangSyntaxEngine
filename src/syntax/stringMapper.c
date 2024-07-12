@@ -16,6 +16,14 @@ StringMapping *registerStringMapping(const char *str);
 
 StringMapping *checkIfExist(char *str);
 
+int getNumNonTerminal() {
+    return abs(id_nonTerminal);
+}
+
+int getNumTerminal() {
+    return id_Terminal;
+}
+
 symbol mapString(char *str, bool isTerminal) {
     if (isTerminal) {
         is_terminal = true;
@@ -36,13 +44,13 @@ symbol mapString(char *str, bool isTerminal) {
 StringMapping *registerStringMapping(const char *str) {
     StringMapping *new_mapping = (StringMapping *)malloc(sizeof(StringMapping));
     if (new_mapping == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
 
     new_mapping->string = my_strdup(str);
     if (new_mapping->string == NULL) {
-        fprintf(stderr, "String duplication failed\n");
+        DEBUG_PRINT("String duplication failed\n");
         exit(EXIT_FAILURE);
     }
 

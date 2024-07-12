@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "conditions.h"
+#include "debug.h"
 
 #define IN
 #define OUT

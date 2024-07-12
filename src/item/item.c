@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define ReviseOffset(n) (n + abs(id_nonTerminal))
+#define ReviseOffset(n) (n + getNumNonTerminal())
 #define UNSET_ID (-1)
 
 ProductionRule *grammarRules;
@@ -29,14 +29,14 @@ LR1Item *findItemFromList(LR1Item *targetItem, bool (*cmpMethod)(LR1Item*, LR1It
 
 LR1Item *constructInitialItemSet() {
     if (startProductionRule.id == UNSET_ID) {
-        fprintf(stderr, "The start rule has not been set.\n");
-        fprintf(stderr, "Set the start by using setStartRule(ProductionRule*) before running constructInitialItemSet\n");
+        DEBUG_PRINT("The start rule has not been set.\n");
+        DEBUG_PRINT("Set the start by using setStartRule(ProductionRule*) before running constructInitialItemSet\n");
         exit(EXIT_FAILURE);
     }
 
     LR1Item *startItem = malloc(sizeof(LR1Item));
     if (!startItem) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
     
@@ -82,7 +82,7 @@ LR1Item *constructItemSet(LR1Item *item) {
         printf(">Next lookahead symbol: %s\n", exchangeSymbol(sym));
         LR1Item *newItemSet = calloc(1, sizeof(LR1Item));
         if (!newItemSet) {
-            fprintf(stderr, "Memory allocation failed\n");
+            DEBUG_PRINT("Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
 
@@ -93,7 +93,7 @@ LR1Item *constructItemSet(LR1Item *item) {
         newItemSet->maxGotoItems = 6;
         newItemSet->gotoItems = calloc(newItemSet->maxGotoItems, sizeof(LR1Item *));
         if (!newItemSet->gotoItems) {
-            fprintf(stderr, "Memory allocation failed\n");
+            DEBUG_PRINT("Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
 
@@ -128,7 +128,7 @@ void addGotoItem(LR1Item *item, LR1Item *gotoItem) {
     if (item->numGotoItems > item->maxGotoItems) {
         item->gotoItems = realloc(item->gotoItems, (item->maxGotoItems *= 2) * sizeof(LR1Item *));
         if (!item->gotoItems) {
-            fprintf(stderr, "Memory allocation failed\n");
+            DEBUG_PRINT("Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -145,14 +145,14 @@ LR1Item **initializeLR1ItemList() {
 
 void addLR1ItemList(LR1Item *item) {
     if (!LR1ItemList) {
-        fprintf(stderr, "LR1 item list hasnt been initialized; use initializeLR1ItemList");
+        DEBUG_PRINT("LR1 item list hasnt been initialized; use initializeLR1ItemList");
         exit(EXIT_FAILURE);
     }
 
     if (list_numLR1Items > list_maxLR1Items) {
         LR1ItemList = realloc(LR1ItemList, (list_maxLR1Items *= 2) * sizeof(LR1Item *));
         if (!LR1ItemList) {
-            fprintf(stderr, "Memory allocation failed\n");
+            DEBUG_PRINT("Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -196,7 +196,7 @@ LR1Item *findItemInGotoSets(LR1Item *expectedItem) {
 }
 
 symbol *extractLookaheadSymbols(ProductionRule *prod) {
-    int existenceArrLength = abs(id_nonTerminal) + id_Terminal;
+    int existenceArrLength = getNumNonTerminal() + getNumTerminal();
     bool symbolExistenceArray[existenceArrLength];
     for (int i = 0; i < existenceArrLength; i++) {
         symbolExistenceArray[i] = false;
@@ -218,7 +218,7 @@ symbol *extractLookaheadSymbols(ProductionRule *prod) {
         if (numSymbols + 1 > symArrayLength) {
             symbols = realloc(symbols, (symArrayLength *= 2) * sizeof(symbol));
             if (!symbols) {
-                fprintf(stderr, "Memory allocation failed\n");
+                DEBUG_PRINT("Memory allocation failed\n");
                 exit(EXIT_FAILURE);
             }
         }
@@ -234,6 +234,7 @@ symbol *extractLookaheadSymbols(ProductionRule *prod) {
 void closure_(symbol targetSymbol, ExistenceArray symbolExistenceArray[], ExistenceArray ruleExistenceArray[]) {
 
     for (ProductionRule *curRule = &startProductionRule; curRule; curRule = curRule->next) {
+        if (isTerminal(curRule->rhs[0])) continue;
 
         symbol left = curRule->lhs;
 
@@ -258,7 +259,7 @@ int reviseNonTerminal(int n) {
 }
 
 ProductionRule *closure(ProductionRule *targetProd) {
-    ExistenceArray *symbolExistenceArray = createExistenceArray(abs(id_nonTerminal), reviseNonTerminal);
+    ExistenceArray *symbolExistenceArray = createExistenceArray(getNumNonTerminal(), reviseNonTerminal);
     ExistenceArray *ruleExistenceArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
     ExistenceArray *ruleHasExistedArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
 

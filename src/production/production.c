@@ -10,7 +10,7 @@ void advanceDot(ProductionRule *prod) {
 
 symbol consumeSymbol(ProductionRule *rule) {
     if (rule->dotPos > rule->numSymbols) {
-        fprintf(stderr, "Out Of Production\n");
+        DEBUG_PRINT("Out Of Production\n");
         exit(EXIT_FAILURE);
     }
     return rule->rhs[rule->dotPos++];
@@ -65,7 +65,7 @@ ProductionRule *cloneProduction(ProductionRule *prod) {
 ProductionRule *cloneProductionRules(ProductionRule *rule) {
     ProductionRule *copy = malloc(sizeof(ProductionRule));
     if (!copy) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
     memcpy(copy, rule, sizeof(ProductionRule));

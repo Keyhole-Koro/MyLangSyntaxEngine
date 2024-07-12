@@ -14,7 +14,7 @@ static symbol *processRightBuffer(Token *cur, Token **rest);
 ProductionRule *processSyntaxTxt(char *file_path) {
     FILE *file = fopen(file_path, "r");
     if (file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", file_path);
+        DEBUG_PRINT("Failed to open file %s\n", file_path);
         exit(EXIT_FAILURE);
     }
 
@@ -65,7 +65,7 @@ ProductionRule *processSyntaxTxt(char *file_path) {
 static ProductionRule *constructRule(symbol left, symbol *right) {
     ProductionRule *rule = malloc(sizeof(ProductionRule));
     if (!rule) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
     rule->id = latestProdId++;
@@ -97,7 +97,7 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
     int numTk = 0;
     symbol *newRight = malloc(maxRight * sizeof(symbol));
     if (!newRight) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
     newRight[0] = END_SYMBOL_ARRAY;
@@ -110,7 +110,7 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
         if (numTk + 1 > maxRight) {
             newRight = realloc(newRight, (maxRight *= 2) * sizeof(symbol));
             if (!newRight) {
-                fprintf(stderr, "Memory allocation failed\n");
+                DEBUG_PRINT("Memory allocation failed\n");
                 exit(EXIT_FAILURE);
             }
         }
@@ -118,7 +118,7 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
             mapString(current->value, IS_TERMINAL) : mapString(current->value, IS_NONTERMINAL);
     }
     if (latestProdId == 0 && !prime_found) {
-        fprintf(stderr, "prime rule must be set once.\n");
+        DEBUG_PRINT("prime rule must be set once.\n");
         exit(EXIT_FAILURE);
     }
     newRight[numTk] = END_SYMBOL_ARRAY;

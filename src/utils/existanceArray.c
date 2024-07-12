@@ -3,12 +3,12 @@
 ExistenceArray *createExistenceArray(int capacity, int (*reviseOffset)(int)) {
     ExistenceArray *exArray = malloc(sizeof(ExistenceArray));
     if (!exArray) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
     exArray->array = calloc(capacity, sizeof(bool));
     if (!exArray->array) {
-        fprintf(stderr, "Memory allocation failed\n");
+        DEBUG_PRINT("Memory allocation failed\n");
         free(exArray);
         exit(EXIT_FAILURE);
     }
@@ -31,7 +31,7 @@ void freeExistenceArray(ExistenceArray *exArray) {
 bool checkAndSetExistence(ExistenceArray *exArray, int value) {
     int offset = exArray->reviseOffset(value);
     if (offset < 0 || offset > exArray->capacity) {
-        fprintf(stderr, "Offset out of bounds\n");
+        DEBUG_PRINT("Offset out of bounds\n");
         exit(EXIT_FAILURE);
     }
     if (exArray->array[offset]) return true;
@@ -43,7 +43,7 @@ bool checkAndSetExistence(ExistenceArray *exArray, int value) {
 // turn the overlapping part into false
 // params are required to have the same property
 void eliminateOverlapsExstanceArray(ExistenceArray *referentArray, ExistenceArray *eliminatedArray) {
-    if (getCapacity(referentArray) != getCapacity(eliminatedArray)) fprintf(stderr, "The combination of the params are not allowed");
+    if (getCapacity(referentArray) != getCapacity(eliminatedArray)) DEBUG_PRINT("The combination of the params are not allowed");
     for (int i = 0; i < getCapacity(referentArray); i++) {
         if (!referentArray->array[i]) continue;
 
