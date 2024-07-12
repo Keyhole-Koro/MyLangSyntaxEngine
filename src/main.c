@@ -4,11 +4,14 @@ int main() {
     char *path = "./syntaxSamples/sample1.txt";
 
     const ProductionRule *prods = processSyntaxTxt(path);
-    
-    showProductionRules();
 
-    setStartRule(prods);
-    constructInitialItemSet();
+    first(prods);
+    
+    //showProductionRules();
+
+    //enable_item_debug();
+    //setStartRule(prods);
+    //constructInitialItemSet();
 
     //printMapping_Non_Terminal();
 

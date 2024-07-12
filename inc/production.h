@@ -8,6 +8,8 @@
 #include <string.h>
 
 #include "symbol.h"
+#include "existanceArray.h"
+#include "stringMapper.h"
 #include "debug.h"
 
 typedef struct ProductionRule ProductionRule;
@@ -38,5 +40,10 @@ ProductionRule *cloneProductionRules(ProductionRule *rule);
 bool compareProductionRules(ProductionRule *rule1, ProductionRule *rule2);
 
 ProductionRule *combineProductions(ProductionRule *prod1, ProductionRule *prod2);
+
+ProductionRule *closure(ProductionRule *startProductionRule, ProductionRule *targetProd);
+
+int reviseNonTerminal(int n);
+symbol getLhs(ProductionRule *rule);
 
 #endif

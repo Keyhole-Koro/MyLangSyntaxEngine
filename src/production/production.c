@@ -2,6 +2,8 @@
 
 int getNumProductionRuleSets();// defined in syntax.c
 
+void closure_(ProductionRule *startProductionRule, symbol targetSymbol, ExistenceArray symbolExistenceArray[], ExistenceArray ruleExistenceArray[]);
+
 void advanceDot(ProductionRule *prod) {
     for (ProductionRule *rule = prod; rule; rule = rule->next) {
         if (rule->dotPos < rule->numSymbols) rule->dotPos++;
@@ -106,4 +108,74 @@ ProductionRule *combineProductions(ProductionRule *prod1, ProductionRule *prod2)
     copyProd1->next = copyProd2;
 
     return entry;
+}
+
+void closure_(ProductionRule *startProductionRule, symbol targetSymbol, ExistenceArray symbolExistenceArray[], ExistenceArray ruleExistenceArray[]) {
+
+    for (ProductionRule *curRule = startProductionRule; curRule; curRule = curRule->next) {
+        if (isTerminal(curRule->rhs[0])) continue;
+
+        symbol left = curRule->lhs;
+
+        if (left != targetSymbol) continue;
+
+        symbol firstRightSymbol = curRule->rhs[0];
+
+        checkAndSetExistence(ruleExistenceArray, curRule->id);
+
+        if (!checkAndSetExistence(
+                symbolExistenceArray
+                , firstRightSymbol))
+                            closure_(
+                                startProductionRule
+                                , firstRightSymbol
+                                , symbolExistenceArray
+                                , ruleExistenceArray);        
+    }
+}
+
+int reviseNonTerminal(int n) {
+    return abs(n);
+}
+
+ProductionRule *closure(ProductionRule *startProductionRule, ProductionRule *targetProd) {
+    ExistenceArray *symbolExistenceArray = createExistenceArray(getNumNonTerminal(), reviseNonTerminal);
+    ExistenceArray *ruleExistenceArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
+    ExistenceArray *ruleHasExistedArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
+
+    for (ProductionRule *prod = targetProd; prod; prod = prod->next) {
+        symbol lookaheadSymbol = prod->rhs[prod->dotPos + 1];
+        if (isTerminal(lookaheadSymbol)) continue;
+
+        checkAndSetExistence(ruleHasExistedArray, prod->id);
+
+        if (!checkAndSetExistence(
+                symbolExistenceArray
+                , lookaheadSymbol))
+                            closure_(
+                                startProductionRule
+                                , lookaheadSymbol
+                                , symbolExistenceArray
+                                , ruleExistenceArray);
+    }
+
+    // remove prods has already been in targetProd (the arg of this function)
+    eliminateOverlapsExstanceArray(ruleHasExistedArray, ruleExistenceArray);
+
+    ProductionRule *start = NULL;
+    ProductionRule **ppRule = &start;
+    for (ProductionRule *curRule = startProductionRule; curRule; curRule = curRule->next) {
+
+        if (!ruleExistenceArray->array[curRule->id]) continue;
+
+        *ppRule = cloneProductionRules(curRule);
+        ppRule = &(*ppRule)->next;
+    }
+
+    return start;
+}
+
+
+symbol getLhs(ProductionRule *rule) {
+    return rule->lhs;
 }

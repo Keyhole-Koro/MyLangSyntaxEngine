@@ -9,6 +9,16 @@
 #define ReviseOffset(n) (n + getNumNonTerminal())
 #define UNSET_ID (-1)
 
+bool DEBUG_ITEM_ENABLED = false;
+
+#define DEBUG_ITEM(fmt, ...) \
+    do { \
+        if (DEBUG_ITEM_ENABLED) { \
+            fprintf(stderr, fmt, ##__VA_ARGS__); \
+        } \
+    } while (0)
+
+    
 ProductionRule *grammarRules;
 ProductionRule startProductionRule = {UNSET_ID, 0, 0, NULL, 0, NULL};
 const ProductionRule *startProductionRuleCopy = NULL;
@@ -22,7 +32,6 @@ LR1Item *findItemSet(ProductionRule *production, symbol lookahead);
 LR1Item *findItemInGotoSets(LR1Item *expectedItem);
 symbol *extractLookaheadSymbols(ProductionRule *production);
 void advanceDot(ProductionRule *prod);
-ProductionRule *closure(ProductionRule *targetProd);
 
 void addLR1ItemList(LR1Item *item);
 LR1Item *findItemFromList(LR1Item *targetItem, bool (*cmpMethod)(LR1Item*, LR1Item*));
@@ -55,8 +64,8 @@ LR1Item *constructInitialItemSet() {
 LR1Item *constructItemSet(LR1Item *item) {
     if (!startItemSet) startItemSet = item;
 
-    printf("------------------------------------\n");
-    printf("Number of item sets: %d\n", numItemSets);
+    DEBUG_ITEM("------------------------------------\n");
+    DEBUG_ITEM("Number of item sets: %d\n", numItemSets);
 
     ProductionRule *clonedProd = cloneProduction(item->production);
     symbol *lookaheadSymbols = extractLookaheadSymbols(clonedProd);
@@ -66,7 +75,7 @@ LR1Item *constructItemSet(LR1Item *item) {
 
     while ((sym = lookaheadSymbols[i++]) != END_SYMBOL_ARRAY) {
         ProductionRule *commonRules = filterProductions(clonedProd, getCurrentSymbol, sym);
-        ProductionRule *closureRules = closure(commonRules);
+        ProductionRule *closureRules = closure(&startProductionRule, commonRules);
 
         if (!commonRules && !closureRules) continue;
 
@@ -79,7 +88,7 @@ LR1Item *constructItemSet(LR1Item *item) {
             continue;
         }
 
-        printf(">Next lookahead symbol: %s\n", exchangeSymbol(sym));
+        DEBUG_ITEM(">Next lookahead symbol: %s\n", exchangeSymbol(sym));
         LR1Item *newItemSet = calloc(1, sizeof(LR1Item));
         if (!newItemSet) {
             DEBUG_PRINT("Memory allocation failed\n");
@@ -98,20 +107,20 @@ LR1Item *constructItemSet(LR1Item *item) {
         }
 
         for (ProductionRule *rule = allRequiredProductions; rule; rule = rule->next) {
-            printf("Rule ID: %d, lookahead symbol: '%s', number of symbols: %d, dot position: %d\n",
+            DEBUG_ITEM("Rule ID: %d, lookahead symbol: '%s', number of symbols: %d, dot position: %d\n",
                 rule->id,
                 exchangeSymbol(rule->rhs[rule->dotPos]),
                 rule->numSymbols,
                 rule->dotPos);
             
-            printf("[");
+            DEBUG_ITEM("[");
             for (int i = 0; i < rule->numSymbols; i++) {
-                printf("%s", exchangeSymbol(rule->rhs[i]));
+                DEBUG_ITEM("%s", exchangeSymbol(rule->rhs[i]));
                 if (i < rule->numSymbols - 1) {
-                    printf(" ");
+                    DEBUG_ITEM(" ");
                 }
             }
-            printf("]\n");
+            DEBUG_ITEM("]\n");
         }
 
         addLR1ItemList(newItemSet);
@@ -230,68 +239,8 @@ symbol *extractLookaheadSymbols(ProductionRule *prod) {
     return symbols;
 }
 
-
-void closure_(symbol targetSymbol, ExistenceArray symbolExistenceArray[], ExistenceArray ruleExistenceArray[]) {
-
-    for (ProductionRule *curRule = &startProductionRule; curRule; curRule = curRule->next) {
-        if (isTerminal(curRule->rhs[0])) continue;
-
-        symbol left = curRule->lhs;
-
-        if (left != targetSymbol) continue;
-
-        symbol firstRightSymbol = curRule->rhs[0];
-
-        checkAndSetExistence(ruleExistenceArray, curRule->id);
-
-        if (!checkAndSetExistence(
-                symbolExistenceArray
-                , firstRightSymbol))
-                            closure_(
-                                firstRightSymbol
-                                , symbolExistenceArray
-                                , ruleExistenceArray);        
-    }
-}
-
-int reviseNonTerminal(int n) {
-    return abs(n);
-}
-
-ProductionRule *closure(ProductionRule *targetProd) {
-    ExistenceArray *symbolExistenceArray = createExistenceArray(getNumNonTerminal(), reviseNonTerminal);
-    ExistenceArray *ruleExistenceArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
-    ExistenceArray *ruleHasExistedArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
-
-    for (ProductionRule *prod = targetProd; prod; prod = prod->next) {
-        symbol lookaheadSymbol = prod->rhs[prod->dotPos + 1];
-        if (isTerminal(lookaheadSymbol)) continue;
-
-        checkAndSetExistence(ruleHasExistedArray, prod->id);
-
-        if (!checkAndSetExistence(
-                symbolExistenceArray
-                , lookaheadSymbol))
-                            closure_(
-                                lookaheadSymbol
-                                , symbolExistenceArray
-                                , ruleExistenceArray);
-    }
-
-    // remove prods has already been in targetProd (the arg of this function)
-    eliminateOverlapsExstanceArray(ruleHasExistedArray, ruleExistenceArray);
-
-    ProductionRule *start = NULL;
-    ProductionRule **ppRule = &start;
-    for (ProductionRule *curRule = &startProductionRule; curRule; curRule = curRule->next) {
-
-        if (!ruleExistenceArray->array[curRule->id]) continue;
-
-        *ppRule = cloneProductionRules(curRule);
-        ppRule = &(*ppRule)->next;
-    }
-
-    return start;
+void enable_item_debug() {
+    DEBUG_ITEM_ENABLED = true;
 }
 
 void setStartRule(const ProductionRule *entryRule) {
