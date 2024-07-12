@@ -13,15 +13,15 @@ symbol consumeSymbol(ProductionRule *rule) {
         fprintf(stderr, "Out Of Production\n");
         exit(EXIT_FAILURE);
     }
-    return rule->production[rule->dotPos++];
+    return rule->rhs[rule->dotPos++];
 }
 
 int getCurrentSymbol(ProductionRule *prod) {
-    return prod->production[prod->dotPos];
+    return prod->rhs[prod->dotPos];
 }
 
 int getLeftNonTerminal(ProductionRule *prod) {
-    return prod->nonTerminal;
+    return prod->lhs;
 }
 
 ProductionRule *filterProductions(ProductionRule *sourceProd, int (*condition)(ProductionRule*), int expectedValue) {

@@ -69,8 +69,8 @@ static ProductionRule *constructRule(symbol left, symbol *right) {
         exit(EXIT_FAILURE);
     }
     rule->id = latestProdId++;
-    rule->nonTerminal = left;
-    rule->production = right;
+    rule->lhs = left;
+    rule->rhs = right;
     rule->dotPos = 0;
     rule->next = NULL;
     int i = -1;
@@ -102,7 +102,9 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
     }
     newRight[0] = END_SYMBOL_ARRAY;
     Token *current;
+    bool prime_found = false;
     for (current = cur; current->next; current = current->next) {
+        if (current->kind == PRIME) prime_found = true;
         if (current->kind == NEWLINE) break;
         if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
         if (numTk + 1 > maxRight) {
@@ -115,6 +117,10 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
         newRight[numTk++] = current->kind == TERMINAL ? 
             mapString(current->value, IS_TERMINAL) : mapString(current->value, IS_NONTERMINAL);
     }
+    if (latestProdId == 0 && !prime_found) {
+        fprintf(stderr, "prime rule must be set once.\n");
+        exit(EXIT_FAILURE);
+    }
     newRight[numTk] = END_SYMBOL_ARRAY;
     *rest = current;
     return newRight;
@@ -125,12 +131,12 @@ void showProductionRules() {
     while (current) {
         printf("----\n");
         printf("ID: %d\n", current->id);
-        printf("Non-Terminal: %s\n", exchangeSymbol(current->nonTerminal));
-        printf("Number of Elements of Productions: %d\n", current->numSymbols);
-        printf("Production:");
+        printf("lhs: %s\n", exchangeSymbol(current->lhs));
+        printf("Number of Elements of rhs: %d\n", current->numSymbols);
+        printf("right hand side:");
         int i = 0;
-        while (current->production[i] != END_SYMBOL_ARRAY) {
-            printf(" %s", exchangeSymbol(current->production[i++]));
+        while (current->rhs[i] != END_SYMBOL_ARRAY) {
+            printf(" %s", exchangeSymbol(current->rhs[i++]));
         }
         printf("\n");
         current = current->next;

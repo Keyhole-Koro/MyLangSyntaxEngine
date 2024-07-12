@@ -30,7 +30,7 @@ void freeExistenceArray(ExistenceArray *exArray) {
 
 bool checkAndSetExistence(ExistenceArray *exArray, int value) {
     int offset = exArray->reviseOffset(value);
-    if (offset < 0 || offset >= exArray->capacity) {
+    if (offset < 0 || offset > exArray->capacity) {
         fprintf(stderr, "Offset out of bounds\n");
         exit(EXIT_FAILURE);
     }

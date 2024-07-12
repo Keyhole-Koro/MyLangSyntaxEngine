@@ -6,6 +6,7 @@
 typedef enum {
     TERMINAL,
     NON_TERMINAL,
+    PRIME, // $
     COLON,
     PIPE,
     NEWLINE,

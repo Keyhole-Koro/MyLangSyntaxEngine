@@ -100,13 +100,13 @@ LR1Item *constructItemSet(LR1Item *item) {
         for (ProductionRule *rule = allRequiredProductions; rule; rule = rule->next) {
             printf("Rule ID: %d, lookahead symbol: '%s', number of symbols: %d, dot position: %d\n",
                 rule->id,
-                exchangeSymbol(rule->production[rule->dotPos]),
+                exchangeSymbol(rule->rhs[rule->dotPos]),
                 rule->numSymbols,
                 rule->dotPos);
             
             printf("[");
             for (int i = 0; i < rule->numSymbols; i++) {
-                printf("%s", exchangeSymbol(rule->production[i]));
+                printf("%s", exchangeSymbol(rule->rhs[i]));
                 if (i < rule->numSymbols - 1) {
                     printf(" ");
                 }
@@ -138,14 +138,14 @@ void addGotoItem(LR1Item *item, LR1Item *gotoItem) {
 int list_numLR1Items = 0;
 int list_maxLR1Items = 20;
 LR1Item **LR1ItemList = NULL;
-LR1Item **setLR1ItemList() {
+LR1Item **initializeLR1ItemList() {
     LR1ItemList = calloc(list_maxLR1Items, sizeof(LR1Item *));
     return LR1ItemList;
 }
 
 void addLR1ItemList(LR1Item *item) {
     if (!LR1ItemList) {
-        fprintf(stderr, "LR1 item list hasnt been initialized; use setLR1ItemList");
+        fprintf(stderr, "LR1 item list hasnt been initialized; use initializeLR1ItemList");
         exit(EXIT_FAILURE);
     }
 
@@ -235,11 +235,11 @@ void closure_(symbol targetSymbol, ExistenceArray symbolExistenceArray[], Existe
 
     for (ProductionRule *curRule = &startProductionRule; curRule; curRule = curRule->next) {
 
-        symbol left = curRule->nonTerminal;
+        symbol left = curRule->lhs;
 
         if (left != targetSymbol) continue;
 
-        symbol firstRightSymbol = curRule->production[0];
+        symbol firstRightSymbol = curRule->rhs[0];
 
         checkAndSetExistence(ruleExistenceArray, curRule->id);
 
@@ -263,7 +263,7 @@ ProductionRule *closure(ProductionRule *targetProd) {
     ExistenceArray *ruleHasExistedArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
 
     for (ProductionRule *prod = targetProd; prod; prod = prod->next) {
-        symbol lookaheadSymbol = prod->production[prod->dotPos + 1];
+        symbol lookaheadSymbol = prod->rhs[prod->dotPos + 1];
         if (isTerminal(lookaheadSymbol)) continue;
 
         checkAndSetExistence(ruleHasExistedArray, prod->id);
@@ -294,6 +294,7 @@ ProductionRule *closure(ProductionRule *targetProd) {
 }
 
 void setStartRule(const ProductionRule *entryRule) {
+    
     startProductionRule = *entryRule;
-    setLR1ItemList();
+    initializeLR1ItemList();
 }
