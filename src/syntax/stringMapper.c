@@ -2,8 +2,8 @@
 
 bool is_terminal = true;
 
-int id_nonTerminal = -1;
-int id_Terminal = 1;
+int id_nonTerminal = 0;
+int id_Terminal = 0;
 
 int current_num_strmap = 0;
 int max_size_strmap = 32;
@@ -53,8 +53,7 @@ StringMapping *registerStringMapping(const char *str) {
         DEBUG_PRINT("String duplication failed\n");
         exit(EXIT_FAILURE);
     }
-
-    new_mapping->number = is_terminal ? id_Terminal++ : id_nonTerminal--;
+    new_mapping->number = is_terminal ? ++id_Terminal : --id_nonTerminal;
     new_mapping->next = NULL;
 
     StringMapping **ppCurrent = &target_mappings;
@@ -62,7 +61,6 @@ StringMapping *registerStringMapping(const char *str) {
         ppCurrent = &((*ppCurrent)->next);
     }
     *ppCurrent = new_mapping;
-
 
     return new_mapping;
 }

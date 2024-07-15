@@ -9,6 +9,9 @@
 #include "existanceArray.h"
 #include "syntax.h"
 
-void first(ProductionRule *entryRule);
+#define table_max_terminal getNumTerminal() + 1
+#define table_max_non_terminal getNumNonTerminal() + 1
+
+bool **first(ProductionRule *entryRule);
 
 #endif

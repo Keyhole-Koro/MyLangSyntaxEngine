@@ -5,7 +5,9 @@
 
 #include "syntax.h"
 #include "stringMapper.h"
+#include "production.h"
 #include "item.h"
 #include "first.h"
+#include "follow.h"
 
 #endif

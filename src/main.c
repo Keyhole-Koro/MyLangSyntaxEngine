@@ -3,15 +3,17 @@
 int main() {
     char *path = "./syntaxSamples/sample1.txt";
 
-    const ProductionRule *prods = processSyntaxTxt(path);
+    ProductionRule *prods = processSyntaxTxt(path);
 
-    first(prods);
+    //bool **firstSets = first(prods);
+
+    //follow(prods, firstSets);
     
-    //showProductionRules();
+    showProductionRules();
 
-    //enable_item_debug();
-    //setStartRule(prods);
-    //constructInitialItemSet();
+    enable_item_debug();
+    setStartRule(prods);
+    constructInitialItemSet();
 
     //printMapping_Non_Terminal();
 

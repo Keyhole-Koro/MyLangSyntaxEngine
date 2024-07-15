@@ -35,7 +35,7 @@ ProductionRule *processSyntaxTxt(char *file_path) {
     // register syntax (messy)
     for (Token *current = &head; current; current = current->next) {
 
-        Token *next= current->next;
+        Token *next = current->next;
 
         /** 
             @brief example sample1.txt
@@ -43,6 +43,7 @@ ProductionRule *processSyntaxTxt(char *file_path) {
         */
         if (current->kind == NON_TERMINAL && next->kind == COLON) {
             left = mapString(current->value, IS_NONTERMINAL);
+            ProductionRule *testmalloc = malloc(20);
             continue;
         /**
             @brief example sample1.txt
@@ -57,8 +58,9 @@ ProductionRule *processSyntaxTxt(char *file_path) {
             continue;
         }
 
-    setStringExchange();
     }
+    setStringExchange();
+
     return prod_rules;
 }
 
