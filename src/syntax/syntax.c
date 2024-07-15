@@ -43,7 +43,6 @@ ProductionRule *processSyntaxTxt(char *file_path) {
         */
         if (current->kind == NON_TERMINAL && next->kind == COLON) {
             left = mapString(current->value, IS_NONTERMINAL);
-            ProductionRule *testmalloc = malloc(20);
             continue;
         /**
             @brief example sample1.txt

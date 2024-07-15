@@ -5,15 +5,16 @@ int main() {
 
     ProductionRule *prods = processSyntaxTxt(path);
 
-    //bool **firstSets = first(prods);
-
-    //follow(prods, firstSets);
-    
     showProductionRules();
 
-    enable_item_debug();
-    setStartRule(prods);
-    constructInitialItemSet();
+    bool **firstSets = first(prods);
+
+    follow(prods, firstSets);
+    
+
+    //enable_item_debug();
+    //setStartRule(prods);
+    //constructInitialItemSet();
 
     //printMapping_Non_Terminal();
 

@@ -24,6 +24,15 @@ int getNumTerminal() {
     return id_Terminal;
 }
 
+int arrayLengthNonTerminal() {
+    return abs(id_nonTerminal) + 1;
+}
+
+int arrayLengthTerminal() {
+    return id_Terminal + 1;
+}
+
+
 symbol mapString(char *str, bool isTerminal) {
     if (isTerminal) {
         is_terminal = true;
@@ -90,20 +99,23 @@ void printMapping_Non_Terminal() {
     }
 }
 
-char **symStringMap;
-#define ReviseOffset(n) (n + abs(id_nonTerminal))
+char **symStringMap_nonTerminal;
+char **symStringMap_Terminal;
 void setStringExchange() {
-    symStringMap = calloc(ReviseOffset(id_Terminal), sizeof(char*));
+    symStringMap_nonTerminal = calloc(arrayLengthNonTerminal(), sizeof(char*));
     for (StringMapping *mapping = &mappings_nonTerminal; mapping; mapping = mapping->next) {
-        symStringMap[ReviseOffset(mapping->number)] = mapping->string;
+        symStringMap_nonTerminal[abs(mapping->number)] = mapping->string;
     }
+    symStringMap_Terminal = calloc(arrayLengthTerminal(), sizeof(char*));
     for (StringMapping *mapping = &mappings_terminal; mapping; mapping = mapping->next) {
-        symStringMap[ReviseOffset(mapping->number)] = mapping->string;
+        symStringMap_Terminal[mapping->number] = mapping->string;
     }
 }
 
 char *exchangeSymbol(symbol sym) {
-    return symStringMap[ReviseOffset(sym)];
+    if (isTerminal(sym)) return symStringMap_Terminal[sym];
+    if (isNonTerminal(sym)) return symStringMap_nonTerminal[abs(sym)];
+    return NULL;
 }
 
 bool isTerminal(symbol sym) {

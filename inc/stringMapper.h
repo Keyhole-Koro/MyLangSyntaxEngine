@@ -32,6 +32,9 @@ symbol mapString(char *str, bool isTerminal);
 int getNumNonTerminal();
 int getNumTerminal();
 
+int arrayLengthNonTerminal();
+int arrayLengthTerminal();
+
 void printMapping_Termianl();
 void printMapping_Non_Termianl();
 

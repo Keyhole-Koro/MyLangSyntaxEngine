@@ -9,4 +9,3 @@ term          : factor
 
 factor        : 'id'
               | '(' expression ')'
-

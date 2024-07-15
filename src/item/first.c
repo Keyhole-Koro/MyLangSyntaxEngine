@@ -5,8 +5,8 @@ ProductionRule *extractRulesWithCommonLhs(ProductionRule *entryRule, ProductionR
 
 bool **first(ProductionRule *entryRule) {
     /* +1 since 0 is not used*/
-    int numNonTerminal = getNumNonTerminal();
-    int numTerminal = getNumTerminal();
+    int numNonTerminal = arrayLengthNonTerminal();
+    int numTerminal = arrayLengthTerminal();
     
     bool **firstSetsTable = (bool **)malloc(numNonTerminal * sizeof(bool *));
     for (int i = 0; i < numNonTerminal; ++i) {
@@ -33,8 +33,12 @@ bool **first(ProductionRule *entryRule) {
         }
     }
 
+    printf("---------------\nfirst table below\n");
     for (int i = 1; i < numNonTerminal; i++) {
-        printf("%s: {", exchangeSymbol(-1 * i));
+        symbol non_terminal_sym = -1 * i;
+        if (*exchangeSymbol(non_terminal_sym) == '$') continue;
+
+        printf("FIRST(%s) = {", exchangeSymbol(non_terminal_sym));
         for (int j = 1; j < numTerminal; j++) {
             if (!firstSetsTable[i][j]) continue;
             printf("%s ", exchangeSymbol(j));
@@ -49,6 +53,7 @@ void probeNonTerminalRulesRecursively(ProductionRule *startProductionRule, symbo
     for (ProductionRule *curRule = startProductionRule; curRule; curRule = curRule->next) {
         symbol left = curRule->lhs;
 
+        if (*exchangeSymbol(left) == '$') continue;
         if (left != targetSymbol) continue;
 
         symbol firstRightSymbol = curRule->rhs[0];
@@ -64,7 +69,7 @@ void probeNonTerminalRulesRecursively(ProductionRule *startProductionRule, symbo
 }
 
 ProductionRule *extractRulesWithCommonLhs(ProductionRule *entryRule, ProductionRule *commonLhsRules) {
-    ExistenceArray *symbolExistenceArray = createExistenceArray(getNumNonTerminal(), reviseNonTerminal);
+    ExistenceArray *symbolExistenceArray = createExistenceArray(arrayLengthNonTerminal(), reviseNonTerminal);
     ExistenceArray *ruleExistenceArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
 
     for (ProductionRule *rule = commonLhsRules; rule; rule = rule->next) {

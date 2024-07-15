@@ -12,12 +12,6 @@ Token *tokenizeLine(char *ipt, Token *cur) {
             continue;
         }
 
-        if (*ipt == '$') {
-            cur = makeToken(cur, PRIME, NULL);
-            ipt++;
-            continue;
-        }
-
         if (*ipt == '|') {
             cur = makeToken(cur, PIPE, NULL);
             ipt++;
@@ -39,6 +33,12 @@ Token *tokenizeLine(char *ipt, Token *cur) {
         if (*ipt == '\'') {
             cur = makeToken(cur, TERMINAL, readUntil(isSingleQuote, ++ipt, &rest));
             ipt = ++rest;
+            continue;
+        }
+
+        if (*ipt == '$') {
+            cur = makeToken(cur, PRIME, NULL);
+            ipt++;
             continue;
         }
 

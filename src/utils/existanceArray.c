@@ -1,6 +1,10 @@
 #include "existanceArray.h"
 
 ExistenceArray *createExistenceArray(int capacity, int (*reviseOffset)(int)) {
+    if (capacity <= 0) {
+        DEBUG_PRINT("Capacity is less than 0 or equal to 0 is invalid");
+        exit(EXIT_FAILURE);
+    }
     ExistenceArray *exArray = malloc(sizeof(ExistenceArray));
     if (!exArray) {
         DEBUG_PRINT("Memory allocation failed\n");

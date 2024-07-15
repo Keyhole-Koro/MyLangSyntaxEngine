@@ -77,12 +77,11 @@ LR1Item *constructItemSet(LR1Item *item) {
         ProductionRule *commonRules = filterProductions(clonedProd, getCurrentSymbol, sym);
         ProductionRule *closureRules = closure(&startProductionRule, commonRules);
 
-        if (!commonRules && !closureRules) continue;
-
         advanceDot(commonRules);
        
         ProductionRule *allRequiredProductions = combineProductions(closureRules, commonRules);
         LR1Item *foundItemSet = findItemSet(allRequiredProductions, sym);
+
         if (foundItemSet) {
             addGotoItem(item, foundItemSet);
             continue;
