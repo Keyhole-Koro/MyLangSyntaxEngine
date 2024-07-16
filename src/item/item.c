@@ -6,7 +6,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define ReviseOffset(n) (n + getNumNonTerminal())
 #define UNSET_ID (-1)
 
 bool DEBUG_ITEM_ENABLED = false;
@@ -83,9 +82,24 @@ LR1Item *constructItemSet(LR1Item *item) {
         LR1Item *foundItemSet = findItemSet(allRequiredProductions, sym);
 
         if (foundItemSet) {
+            /*for (ProductionRule *rule1 = allRequiredProductions; rule1; rule1=rule1->next) {
+                DEBUG_ITEM("found ID: %d, lookahead symbol: '%s', number of symbols: %d, dot position: %d\n",
+                    rule1->id,
+                    exchangeSymbol(rule1->rhs[rule1->dotPos]),
+                    rule1->numSymbols,
+                    rule1->dotPos);
+            }
+            for (ProductionRule *rule2 = foundItemSet->production; rule2; rule2=rule2->next) {
+                DEBUG_ITEM("found r2 ID: %d, lookahead symbol: '%s', number of symbols: %d, dot position: %d\n",
+                    rule2->id,
+                    exchangeSymbol(rule2->rhs[rule2->dotPos]),
+                    rule2->numSymbols,
+                    rule2->dotPos);
+            }*/
             addGotoItem(item, foundItemSet);
             continue;
         }
+
 
         DEBUG_ITEM(">Next lookahead symbol: %s\n", exchangeSymbol(sym));
         LR1Item *newItemSet = calloc(1, sizeof(LR1Item));
@@ -185,12 +199,12 @@ bool ifItemTargetExists(LR1Item *item1, LR1Item *item2) {
 
     ExistenceArray *exArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
 
-    for (ProductionRule *prod = item1->production; prod; prod = prod->next) {
-        exArray->array[prod->id] = true;
+    for (ProductionRule *rule = item1->production; rule; rule = rule->next) {
+        exArray->array[rule->id] = true;
     }
 
-    for (ProductionRule *prod = item2->production; prod; prod = prod->next) {
-        if (!checkAndSetExistence(exArray, prod->id)) {
+    for (ProductionRule *rule = item2->production; rule; rule = rule->next) {
+        if (!checkAndSetExistence(exArray, rule->id)) {
             freeExistenceArray(exArray);
             return false;
         }
@@ -204,6 +218,9 @@ LR1Item *findItemInGotoSets(LR1Item *expectedItem) {
 }
 
 symbol *extractLookaheadSymbols(ProductionRule *prod) {
+    ExistenceArray *isNonTerminalSet = createExistenceArray(getNumNonTerminal(), reviseNonTerminal);
+    ExistenceArray *isTerminalSet = createExistenceArray(getNumTerminal(), noRevise);
+
     int existenceArrLength = getNumNonTerminal() + getNumTerminal();
     bool symbolExistenceArray[existenceArrLength];
     for (int i = 0; i < existenceArrLength; i++) {
@@ -219,9 +236,8 @@ symbol *extractLookaheadSymbols(ProductionRule *prod) {
 
         symbol readSym = getCurrentSymbol(rule);
 
-        int revisedOffset = ReviseOffset(readSym);
-        if (symbolExistenceArray[revisedOffset]) continue;
-        symbolExistenceArray[revisedOffset] = true;
+        if (isNonTerminal(readSym) && checkAndSetExistence(isNonTerminalSet, readSym)) continue;
+        if (isTerminal(readSym) && checkAndSetExistence(isTerminalSet, readSym)) continue;
 
         if (numSymbols + 1 > symArrayLength) {
             symbols = realloc(symbols, (symArrayLength *= 2) * sizeof(symbol));

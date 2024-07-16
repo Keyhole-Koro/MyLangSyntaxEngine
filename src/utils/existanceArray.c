@@ -18,6 +18,11 @@ ExistenceArray *createExistenceArray(int capacity, int (*reviseOffset)(int)) {
     }
     exArray->capacity = capacity;
     exArray->reviseOffset = reviseOffset;
+
+    for (int i = 0; i < getCapacity(exArray); i++) {
+        exArray->array[i] = false;
+    }
+
     return exArray;
 }
 
