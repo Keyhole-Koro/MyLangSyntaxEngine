@@ -9,5 +9,6 @@
 #include "item.h"
 #include "first.h"
 #include "follow.h"
+#include "GoToTable.h"
 
 #endif

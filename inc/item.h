@@ -19,6 +19,8 @@ typedef struct LR1Item {
 void setStartRule(const ProductionRule *entryRule);
 LR1Item *constructInitialItemSet();
 
+int getNumItemSets();
+
 void enable_item_debug();
 
 #endif

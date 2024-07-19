@@ -110,27 +110,31 @@ ProductionRule *combineProductions(ProductionRule *prod1, ProductionRule *prod2)
     return entry;
 }
 
-void closure_(ProductionRule *startProductionRule, symbol targetSymbol, ExistenceArray symbolExistenceArray[], ExistenceArray ruleExistenceArray[]) {
+void closure_(ProductionRule *startProductionRule
+            , symbol targetSymbol
+            , ExistenceArray symbolExistenceArray[]
+            , ExistenceArray ruleExistenceArray[]) {
 
     for (ProductionRule *curRule = startProductionRule; curRule; curRule = curRule->next) {
-        if (isTerminal(curRule->rhs[0])) continue;
+        symbol lhs = curRule->lhs;
 
-        symbol left = curRule->lhs;
-
-        if (left != targetSymbol) continue;
+        if (lhs != targetSymbol) continue;
 
         symbol firstRightSymbol = curRule->rhs[0];
 
         checkAndSetExistence(ruleExistenceArray, curRule->id);
 
+        if (isTerminal(firstRightSymbol)) continue;
+        if (curRule->id == 0) continue;
+
         if (!checkAndSetExistence(
                 symbolExistenceArray
                 , firstRightSymbol))
-                            closure_(
-                                startProductionRule
-                                , firstRightSymbol
-                                , symbolExistenceArray
-                                , ruleExistenceArray);        
+                    closure_(
+                        startProductionRule
+                        , firstRightSymbol
+                        , symbolExistenceArray
+                        , ruleExistenceArray);        
     }
 }
 
@@ -143,6 +147,9 @@ ProductionRule *closure(ProductionRule *startProductionRule, ProductionRule *tar
     ExistenceArray *ruleExistenceArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
     ExistenceArray *ruleHasExistedArray = createExistenceArray(getNumProductionRuleSets(), noRevise);
 
+    for (ProductionRule *prod = targetProd; prod; prod = prod->next) {
+        checkAndSetExistence(ruleHasExistedArray, prod->id);
+    }
     for (ProductionRule *prod = targetProd; prod; prod = prod->next) {
         symbol lookaheadSymbol = prod->rhs[prod->dotPos + 1];
         if (isTerminal(lookaheadSymbol)) continue;

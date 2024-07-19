@@ -7,14 +7,15 @@ int main() {
 
     //showProductionRules();
 
-    //bool **firstSets = first(prods);
+    bool **firstSets = first(prods);
 
-    //follow(prods, firstSets);
-    
+    bool **followSets = follow(prods, firstSets);    
 
     enable_item_debug();
     setStartRule(prods);
-    constructInitialItemSet();
+    LR1Item *entryItem = constructInitialItemSet();
+
+    //GotoTable(firstSets, followSets, entryItem);
 
     //printMapping_Non_Terminal();
 
