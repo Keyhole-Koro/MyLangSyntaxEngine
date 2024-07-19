@@ -11,11 +11,11 @@ int main() {
 
     bool **followSets = follow(prods, firstSets);    
 
-    enable_item_debug();
+    ///enable_item_debug();
     setStartRule(prods);
     LR1Item *entryItem = constructInitialItemSet();
 
-    //GotoTable(firstSets, followSets, entryItem);
+    GotoTable(firstSets, followSets, entryItem);
 
     //printMapping_Non_Terminal();
 

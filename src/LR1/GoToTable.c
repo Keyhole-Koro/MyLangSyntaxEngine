@@ -11,6 +11,8 @@ bool **_followSetsTable = NULL;
 GoToHead *table_head = NULL;
 GoToSide *table_side = NULL;
 
+ExistenceArray *isDoneItem;
+
 void traverseLR1Item(LR1Item *item);
 void setShift_Goto(LR1Item *item);
 void setReduce(LR1Item *item);
@@ -29,6 +31,8 @@ GoTo **GotoTable(bool **first, bool **follow, LR1Item *entryItem) {
     
     setGoToHead();
     setGotoSide();
+
+    isDoneItem = createExistenceArray(getNumItemSets(), noRevise);
 
     gotoTable = (GoTo**)malloc(len_row * sizeof(GoTo*));
     for (int i = 0; i < len_row; ++i) {
@@ -83,6 +87,7 @@ GoTo **GotoTable(bool **first, bool **follow, LR1Item *entryItem) {
 void traverseLR1Item(LR1Item *item) {
     setReduce(item);
     setShift_Goto(item);
+    if (checkAndSetExistence(isDoneItem, item->stateId)) return;
     for (int i = 0; i < item->numGotoItems; i++) {
         traverseLR1Item(item->gotoItems[i]);
     }

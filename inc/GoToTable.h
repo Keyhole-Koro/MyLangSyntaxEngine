@@ -4,6 +4,7 @@
 #include "production.h"
 #include "stringMapper.h"
 #include "item.h"
+#include "existanceArray.h"
 
 typedef enum {
     SHIFT = 1,
