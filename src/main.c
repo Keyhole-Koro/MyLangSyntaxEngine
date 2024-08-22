@@ -15,7 +15,9 @@ int main() {
     setStartRule(prods);
     LR1Item *entryItem = constructInitialItemSet();
 
-    GotoTable(firstSets, followSets, entryItem);
+    GoToTable *gototable = genGoToTable(firstSets, followSets, entryItem);
+
+    displayGotoTable(gototable);
 
     //printMapping_Non_Terminal();
 

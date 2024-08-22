@@ -31,6 +31,14 @@ typedef struct {
 
 typedef int GoToSide;
 
-GoTo **GotoTable(bool **first, bool **follow, LR1Item *entryItem);
+typedef struct {
+    int len_head;
+    GoToHead *head;
+    int len_side;
+    GoToSide *side;
+    GoTo **goTo;
+} GoToTable;
+
+GoToTable *genGoToTable(bool **first, bool **follow, LR1Item *entryItem);
 
 #endif

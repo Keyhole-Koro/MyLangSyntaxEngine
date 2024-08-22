@@ -10,5 +10,6 @@
 #include "first.h"
 #include "follow.h"
 #include "GoToTable.h"
+#include "displayGoToTable.h"
 
 #endif

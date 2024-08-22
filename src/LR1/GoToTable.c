@@ -2,7 +2,6 @@
 
 int len_column = 0;
 int len_row = 0;
-const int CELL_WIDTH = 3;
 
 GoTo **gotoTable = NULL;
 bool **_firstSetsTable = NULL;
@@ -20,9 +19,8 @@ void setAcc(LR1Item *item);
 int getGoToColumn(symbol target);
 void setGoToHead();
 void setGotoSide();
-void printCell(const char *str, int width);
 
-GoTo **GotoTable(bool **first, bool **follow, LR1Item *entryItem) {
+GoToTable *genGoToTable(bool **first, bool **follow, LR1Item *entryItem) {
     _firstSetsTable = first;
     _followSetsTable = follow;
 
@@ -41,47 +39,14 @@ GoTo **GotoTable(bool **first, bool **follow, LR1Item *entryItem) {
 
     traverseLR1Item(entryItem);
 
-    for (int i = 0; i < CELL_WIDTH; i++) {
-        printf(" ");
-    }
-    printf("|");
-    for (int i = 0; i < len_column; ++i) {
-        char symbolStr[CELL_WIDTH];
-        if (table_head[i].kind == _TERMINATE) snprintf(symbolStr, CELL_WIDTH, "$");
-        else snprintf(symbolStr, CELL_WIDTH, "%s", exchangeSymbol(table_head[i].sym));
-        printCell(symbolStr, CELL_WIDTH);
-    }
-    printf("\n");
+    GoToTable *table = malloc(sizeof(GoToTable));
+    table->len_head = len_column;
+    table->len_side = len_row;
+    table->head = table_head;
+    table->side = table_side;
+    table->goTo = gotoTable;
 
-    for (int i = 0; i < len_row; ++i) {
-        char stateStr[CELL_WIDTH];
-        snprintf(stateStr, CELL_WIDTH, "%i", i);
-        printCell(stateStr, CELL_WIDTH);
-        for (int j = 0; j < len_column; ++j) {
-            char actionStr[CELL_WIDTH];
-            switch (gotoTable[i][j].act) {
-            case SHIFT:
-                snprintf(actionStr, CELL_WIDTH, "S%d", gotoTable[i][j].state);
-                break;
-            case REDUCE:
-                snprintf(actionStr, CELL_WIDTH, "R%d", gotoTable[i][j].state);
-                break;
-            case ACCEPT:
-                snprintf(actionStr, CELL_WIDTH, "acc");
-                break;
-            case GOTO:
-                snprintf(actionStr, CELL_WIDTH, "%d", gotoTable[i][j].state);
-                break;
-            default:
-                snprintf(actionStr, CELL_WIDTH, "");
-                break;
-            }
-            printCell(actionStr, CELL_WIDTH);
-        }
-        printf("\n");
-    }
-
-    return gotoTable;
+    return table;
 }
 
 void traverseLR1Item(LR1Item *item) {
@@ -158,8 +123,4 @@ void setGotoSide() {
     for (int i = 0; i < len_row; i++) {
         table_side[i] = i;
     }
-}
-
-void printCell(const char *str, int width) {
-    printf("%-*s|", width, str);
 }
