@@ -26,6 +26,10 @@ int getLeftNonTerminal(ProductionRule *prod) {
     return prod->lhs;
 }
 
+bool isEOIRule(ProductionRule *prod) {
+    return isEOI(prod->rhs[prod->numSymbols - 1]);
+}
+
 ProductionRule *filterProductions(ProductionRule *sourceProd, int (*condition)(ProductionRule*), int expectedValue) {
     bool overlapCheckArray[getNumProductionRuleSets()];
     for (int i = 0; i < getNumProductionRuleSets(); i++) {
@@ -39,6 +43,7 @@ ProductionRule *filterProductions(ProductionRule *sourceProd, int (*condition)(P
         if (rule->dotPos > rule->numSymbols) continue;
         if (condition(rule) != expectedValue) continue;
         if (overlapCheckArray[rule->id]) continue;
+
         overlapCheckArray[rule->id] = true;
 
         ProductionRule *copy = cloneProductionRules(rule);
@@ -119,6 +124,7 @@ void closure_(ProductionRule *startProductionRule
         symbol lhs = curRule->lhs;
 
         if (lhs != targetSymbol) continue;
+        if (isEOIRule(curRule)) continue;
 
         symbol firstRightSymbol = curRule->rhs[0];
 

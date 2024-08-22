@@ -23,4 +23,6 @@ int getNumItemSets();
 
 void enable_item_debug();
 
+bool isACC(LR1Item *item, ProductionRule **accProd, symbol *accSym);
+
 #endif

@@ -20,6 +20,8 @@ ProductionRule *processSyntaxTxt(char *file_path);
 void showProductionRules();
 int getNumProductionRuleSets();
 
+bool isEOI(symbol sym);
+
 /** @brief Terms
     production:
     a whole of rules

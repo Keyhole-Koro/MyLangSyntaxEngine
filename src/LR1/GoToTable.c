@@ -52,6 +52,7 @@ GoToTable *genGoToTable(bool **first, bool **follow, LR1Item *entryItem) {
 void traverseLR1Item(LR1Item *item) {
     setReduce(item);
     setShift_Goto(item);
+    setAcc(item);
     if (checkAndSetExistence(isDoneItem, item->stateId)) return;
     for (int i = 0; i < item->numGotoItems; i++) {
         traverseLR1Item(item->gotoItems[i]);
@@ -84,11 +85,14 @@ void setReduce(LR1Item *item) {
     }
 }
 
-/*
 void setAcc(LR1Item *item) {
-
+    ProductionRule *accProd = NULL;
+    symbol accSym = 0;
+    if (isACC(item, &accProd, &accSym)) {
+        GoTo *gt = &gotoTable[item->stateId][getGoToColumn(accSym)]; // prod->rhs[i] supposed to be $
+        gt->act = ACCEPT;
+    }
 }
-*/
 
 int getGoToColumn(symbol target) {
     if (isTerminal(target)) return target - 1;

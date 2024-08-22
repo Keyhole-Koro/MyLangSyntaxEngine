@@ -103,11 +103,11 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
     }
     newRight[0] = END_SYMBOL_ARRAY;
     Token *current;
-    bool prime_found = false;
+    bool EOI_found = false;
     for (current = cur; current->next; current = current->next) {
-        if (current->kind == PRIME) prime_found = true;
         if (current->kind == NEWLINE) break;
-        if (current->kind != TERMINAL && current->kind != NON_TERMINAL) continue;
+        if (current->kind == EOI) EOI_found = true;
+        if (current->kind != TERMINAL && current->kind != NON_TERMINAL && current->kind != EOI) continue;
         if (numTk + 1 > maxRight) {
             newRight = realloc(newRight, (maxRight *= 2) * sizeof(symbol));
             if (!newRight) {
@@ -115,13 +115,27 @@ static symbol *processRightBuffer(Token *cur, Token **rest) {
                 exit(EXIT_FAILURE);
             }
         }
-        newRight[numTk++] = current->kind == TERMINAL ? 
-            mapString(current->value, IS_TERMINAL) : mapString(current->value, IS_NONTERMINAL);
+        switch (current->kind) {
+            case TERMINAL:
+                newRight[numTk++] = mapString(current->value, IS_TERMINAL);
+                break;
+            case NON_TERMINAL:
+                newRight[numTk++] = mapString(current->value, IS_NONTERMINAL);
+                break;
+            case EOI:
+                newRight[numTk++] = mapString("$", IS_TERMINAL);
+                break;
+            default:
+                DEBUG_PRINT("unexpected token\n");
+                exit(EXIT_FAILURE);
+        }
     }
-    if (latestProdId == 0 && !prime_found) {
-        DEBUG_PRINT("prime rule must be set once.\n");
+    
+    if (latestProdId == 0 && !EOI_found) {
+        DEBUG_PRINT("End Of Input $ must be set once.\n");
         exit(EXIT_FAILURE);
     }
+
     newRight[numTk] = END_SYMBOL_ARRAY;
     *rest = current;
     return newRight;

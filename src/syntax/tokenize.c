@@ -37,7 +37,7 @@ Token *tokenizeLine(char *ipt, Token *cur) {
         }
 
         if (*ipt == '$') {
-            cur = makeToken(cur, PRIME, NULL);
+            cur = makeToken(cur, EOI, NULL);
             ipt++;
             continue;
         }

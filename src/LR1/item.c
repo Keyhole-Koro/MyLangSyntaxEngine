@@ -77,6 +77,8 @@ LR1Item *constructItemSet(LR1Item *item) {
     symbol sym = 0;
 
     while ((sym = lookaheadSymbols[i++]) != END_SYMBOL_ARRAY) {
+        if (isEOI(sym)) continue;
+
         ProductionRule *commonRules = filterProductions(clonedProd, getCurrentSymbol, sym);
         ProductionRule *closureRules = closure(&startProductionRule, commonRules);
 
@@ -252,4 +254,17 @@ void setStartRule(const ProductionRule *entryRule) {
     
     startProductionRule = *entryRule;
     initializeLR1ItemList();
+}
+
+bool isACC(LR1Item *item, ProductionRule **accProd, symbol *accSym) {
+    for (ProductionRule *prod = item->production; prod; prod = prod->next) {
+        for (int i = 0; i < prod->numSymbols; i++) {
+            if (!isEOI(prod->rhs[i])) continue;
+            if (prod->dotPos != prod->numSymbols - 1) continue;
+            *accProd = prod;
+            *accSym = prod->rhs[i];
+            return true;
+        }
+    }
+    return false;
 }

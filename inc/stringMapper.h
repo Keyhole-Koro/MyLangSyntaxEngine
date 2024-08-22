@@ -45,4 +45,6 @@ bool isTerminal(symbol sym);
 
 bool isNonTerminal(symbol sym);
 
+bool isEOI(symbol sym);
+
 #endif

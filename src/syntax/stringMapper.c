@@ -124,3 +124,7 @@ bool isTerminal(symbol sym) {
 bool isNonTerminal(symbol sym) {
     return sym < 0;
 }
+
+bool isEOI(symbol sym) {
+    return strcmp(exchangeSymbol(sym), "$") == 0;
+}
