@@ -24,7 +24,7 @@ GoToTable *genGoToTable(bool **first, bool **follow, LR1Item *entryItem) {
     _firstSetsTable = first;
     _followSetsTable = follow;
 
-    len_column = getNumNonTerminal() + getNumTerminal() + 1; // +1 includes terminate symbol
+    len_column = getNumNonTerminal() + getNumTerminal(); // +1 includes terminate symbol
     len_row = getNumItemSets() + 1; // +1 includes state 0
     
     setGoToHead();
@@ -96,8 +96,7 @@ void setAcc(LR1Item *item) {
 
 int getGoToColumn(symbol target) {
     if (isTerminal(target)) return target - 1;
-    else if (isNonTerminal(target)) return getNumTerminal() + abs(target) + 1 - 1;
-    else if (target == 0) return getNumTerminal() + 1 - 1;
+    else if (isNonTerminal(target)) return getNumTerminal() + abs(target) - 1;
 
     exit(EXIT_FAILURE);
 }
@@ -111,9 +110,6 @@ void setGoToHead() {
         terminal->kind = _TERMINAL;
         terminal->sym = i;
     }
-
-    GoToHead *terminate = &table_head[++cur];
-    terminate->kind = _TERMINATE;
 
     for (int i = 1; i < getNumNonTerminal() + 1; i++) {
         GoToHead *nonTerminal = &table_head[++cur];
