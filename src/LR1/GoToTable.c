@@ -24,7 +24,7 @@ GoToTable *genGoToTable(bool **first, bool **follow, LR1Item *entryItem) {
     _firstSetsTable = first;
     _followSetsTable = follow;
 
-    len_column = getNumNonTerminal() + getNumTerminal(); // +1 includes terminate symbol
+    len_column = getNumNonTerminal() + getNumTerminal();
     len_row = getNumItemSets() + 1; // +1 includes state 0
     
     setGoToHead();

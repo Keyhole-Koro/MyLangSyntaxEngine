@@ -32,6 +32,8 @@ LR1Item *findItemInGotoSets(LR1Item *expectedItem);
 symbol *extractLookaheadSymbols(ProductionRule *production);
 void advanceDot(ProductionRule *prod);
 
+bool isEndOfItem(LR1Item *item);
+
 void addLR1ItemList(LR1Item *item);
 LR1Item *findItemFromList(LR1Item *targetItem, bool (*cmpMethod)(LR1Item*, LR1Item*));
 
@@ -92,7 +94,6 @@ LR1Item *constructItemSet(LR1Item *item) {
             continue;
         }
 
-
         DEBUG_ITEM(">Next lookahead symbol: %s\n", exchangeSymbol(sym));
         LR1Item *newItemSet = calloc(1, sizeof(LR1Item));
         if (!newItemSet) {
@@ -138,13 +139,30 @@ LR1Item *constructItemSet(LR1Item *item) {
     return NULL;
 }
 
+bool isEndOfItem(LR1Item *item) {
+    int num_prods = 1;
+    
+    ProductionRule *prod = NULL;
+    for (prod = item->production; prod->next; prod = prod->next) {
+        num_prods++;
+    }
+    if (num_prods > 1) return false;
+
+    if (prod->dotPos != prod->numSymbols) return false;
+
+    return true;
+}
+
 void addGotoItem(LR1Item *item, LR1Item *gotoItem) {
     if (item->numGotoItems > item->maxGotoItems) {
-        item->gotoItems = realloc(item->gotoItems, (item->maxGotoItems *= 2) * sizeof(LR1Item *));
-        if (!item->gotoItems) {
+        LR1Item **newGotoItem = malloc((item->maxGotoItems *= 2) * sizeof(LR1Item *));
+        if (!newGotoItem) {
             DEBUG_PRINT("Memory allocation failed\n");
             exit(EXIT_FAILURE);
         }
+        memcpy(newGotoItem, item->gotoItems, item->maxGotoItems * sizeof(LR1Item *));
+        free(item->gotoItems);
+        item->gotoItems = newGotoItem;
     }
     item->gotoItems[item->numGotoItems++] = gotoItem;
 }

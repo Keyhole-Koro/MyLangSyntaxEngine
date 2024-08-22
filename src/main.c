@@ -1,17 +1,17 @@
 #include "main.h"
 
 int main() {
-    char *path = "./syntaxSamples/sample1.txt";
+    char *path = "./syntaxSamples/sample2.txt";
 
     ProductionRule *prods = processSyntaxTxt(path);
 
-    //showProductionRules();
+    showProductionRules();
 
     bool **firstSets = first(prods);
 
     bool **followSets = follow(prods, firstSets);    
 
-    //enable_item_debug();
+    enable_item_debug();
     setStartRule(prods);
     LR1Item *entryItem = constructInitialItemSet();
 
