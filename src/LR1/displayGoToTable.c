@@ -2,7 +2,7 @@
 
 void printCell(const char *str, int width);
 
-const int CELL_WIDTH = 3;
+const int CELL_WIDTH = 4;
 
 void displayGotoTable(GoToTable *table) {
     GoToHead *head = table->head;

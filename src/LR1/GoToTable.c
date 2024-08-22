@@ -50,8 +50,8 @@ GoToTable *genGoToTable(bool **first, bool **follow, LR1Item *entryItem) {
 }
 
 void traverseLR1Item(LR1Item *item) {
-    setReduce(item);
     setShift_Goto(item);
+    setReduce(item);
     setAcc(item);
     if (checkAndSetExistence(isDoneItem, item->stateId)) return;
     for (int i = 0; i < item->numGotoItems; i++) {

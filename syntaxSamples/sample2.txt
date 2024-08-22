@@ -1,14 +1,12 @@
-program       : declaration_list $
+program       : declarationList $
 
-declaration_list
-              : declaration_list declaration
+declarationList: declarationList declaration
               | declaration
 
-declaration   : type_specifier 'id' ';'
-              | type_specifier 'id' '=' expression ';'
+declaration   : typeSpecifier 'id' ';'
+              | typeSpecifier 'id' '=' expression ';'
 
-type_specifier
-              : 'int'
+typeSpecifier : 'int'
               | 'float'
               | 'char'
               | 'double'
