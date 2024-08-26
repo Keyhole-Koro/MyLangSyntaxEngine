@@ -9,6 +9,8 @@ typedef enum {
     EOI, // $
     COLON,
     PIPE,
+    EQUAL,
+    PATTERN, // regular expression
     NEWLINE,
 } TokenKind;
 

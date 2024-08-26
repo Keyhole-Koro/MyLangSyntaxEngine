@@ -37,6 +37,10 @@ ProductionRule *processSyntaxTxt(char *file_path) {
 
         Token *next = current->next;
 
+        if (next->kind == EQUAL) {
+            registerRegex(current, next->next);
+        }
+
         /** 
             @brief example sample1.txt
             term          :
@@ -53,10 +57,8 @@ ProductionRule *processSyntaxTxt(char *file_path) {
             symbol *right = processRightBuffer(next, &rest);
             registerSyntax(left, right);
             current = rest;
-
             continue;
         }
-
     }
     setStringExchange();
 

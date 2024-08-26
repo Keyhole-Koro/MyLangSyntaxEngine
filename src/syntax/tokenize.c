@@ -42,6 +42,15 @@ Token *tokenizeLine(char *ipt, Token *cur) {
             continue;
         }
 
+        if (*ipt == "=") {
+            cur = makeToken(cur, EQUAL, NULL);
+            ipt++;
+            
+            cur = makeToken(cur, PATTERN, readUntil(isEnd, ipt, &rest));
+            ipt = rest;
+            continue;
+        }
+
         ipt++;
     }
 
