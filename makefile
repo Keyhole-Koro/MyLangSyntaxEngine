@@ -1,23 +1,39 @@
-CC = clang
-LD = lld
-CFLAGS = -Wall -Wextra -std=c99 $(LIBS)
-LDFLAGS = -fuse-ld=$(LD)
-EXECUTABLE = output
-SRC = $(wildcard ./src/*.c) $(wildcard ./src/**/*.c)
-INCLUDE_DIR = ./inc
-BUILD_DIR = ./build
+CC = gcc
+CFLAGS = -Wall -Wextra
 
-INC_FILES := $(wildcard ./inc/*.h)
+SRC = $(shell find src -name '*.c')
+INC_DIRS = $(shell find inc -type d)
+INCLUDE = $(foreach dir,$(INC_DIRS),-I$(dir))
 
-$(shell mkdir -p $(BUILD_DIR))
+OBJ_DIR = $(BUILD_DIR)/obj
+BIN_DIR = $(BUILD_DIR)/bin
+OBJ = $(patsubst src/%.c, $(OBJ_DIR)/%.o, $(SRC))
 
-all: $(BUILD_DIR)/$(EXECUTABLE)
+BUILD_DIR = build
+TARGET = $(BIN_DIR)/output
 
-$(BUILD_DIR)/$(EXECUTABLE): $(SRC)
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -o $@ $^ $(LDFLAGS)
+all: $(OBJ_DIR) $(BIN_DIR) $(TARGET)
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+$(TARGET): $(OBJ)
+	$(CC) -o $@ $^
+
+$(OBJ_DIR)/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
 clean:
-	rm -f $(BUILD_DIR)/$(EXECUTABLE)
+	rm -rf $(OBJ) $(TARGET) $(BUILD_DIR)
 
-run: $(BUILD_DIR)/$(EXECUTABLE)
-	./$(BUILD_DIR)/$(EXECUTABLE)
+valgrind: $(TARGET)
+	valgrind --leak-check=full ./$(TARGET)
+
+run: $(BIN_DIR) $(TARGET)
+	./$(TARGET)
+
+.PHONY: all clean valgrind run
