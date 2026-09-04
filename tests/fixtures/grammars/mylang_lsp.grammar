@@ -51,6 +51,8 @@ typedefStmt : 'TYPEDEF' type 'IDENTIFIER'@type@decl(type) 'SEMICOLON'
 
 structDecl  : 'STRUCT' 'IDENTIFIER'@struct@decl(struct) 'L_BRACE' 'R_BRACE' 'SEMICOLON'
             | 'STRUCT' 'IDENTIFIER'@struct@decl(struct) 'L_BRACE' fieldList 'R_BRACE' 'SEMICOLON'
+            | 'STRUCT' 'IDENTIFIER'@struct@decl(struct) typeParams 'L_BRACE' 'R_BRACE' 'SEMICOLON'
+            | 'STRUCT' 'IDENTIFIER'@struct@decl(struct) typeParams 'L_BRACE' fieldList 'R_BRACE' 'SEMICOLON'
             | 'STRUCT' 'L_BRACE' fieldList 'R_BRACE' 'IDENTIFIER'@struct@decl(struct) 'SEMICOLON'
 
 fieldList   : fieldList varDecl
@@ -72,9 +74,18 @@ funcDecl    : funcDef
 
 funcProto   : type 'IDENTIFIER'@function@decl(function) 'L_PARENTHESES' 'R_PARENTHESES' 'SEMICOLON'
             | type 'IDENTIFIER'@function@decl(function) 'L_PARENTHESES' paramList 'R_PARENTHESES' 'SEMICOLON'
+            | type 'IDENTIFIER'@function@decl(function) typeParams 'L_PARENTHESES' 'R_PARENTHESES' 'SEMICOLON'
+            | type 'IDENTIFIER'@function@decl(function) typeParams 'L_PARENTHESES' paramList 'R_PARENTHESES' 'SEMICOLON'
 
 funcDef     : type 'IDENTIFIER'@function@decl(function) 'L_PARENTHESES' 'R_PARENTHESES' block
             | type 'IDENTIFIER'@function@decl(function) 'L_PARENTHESES' paramList 'R_PARENTHESES' block
+            | type 'IDENTIFIER'@function@decl(function) typeParams 'L_PARENTHESES' 'R_PARENTHESES' block
+            | type 'IDENTIFIER'@function@decl(function) typeParams 'L_PARENTHESES' paramList 'R_PARENTHESES' block
+
+typeParams  : 'LT' typeParamList 'GT'
+
+typeParamList: typeParamList 'COMMA' 'IDENTIFIER'@type
+            | 'IDENTIFIER'@type
 
 paramList   : paramList 'COMMA' param
             | paramList 'COMMA' restParam
@@ -178,6 +189,12 @@ ptrList     : ptrList 'ASTARISK'
 
 baseType    : primitiveType
             | 'IDENTIFIER'@type
+            | 'IDENTIFIER'@type typeArgs
+
+typeArgs    : 'LT' typeArgList 'GT'
+
+typeArgList : typeArgList 'COMMA' type
+            | type
 
 primitiveType: 'BOOL'
             | 'U8'
@@ -233,6 +250,7 @@ shiftExpr   : shiftExpr shiftOp addExpr
 
 shiftOp     : 'LSH'
             | 'RSH'
+            | 'GT' 'GT'
 
 addExpr     : addExpr addOp mulExpr
             | mulExpr
@@ -281,11 +299,15 @@ argList     : argList 'COMMA' expr
             | expr
 
 primary     : 'IDENTIFIER'@variable
+            | genericCall
             | 'NUMBER'
             | 'STRING_LITERAL'
             | 'CHAR_LITERAL'
             | funLiteral
             | 'L_PARENTHESES' expr 'R_PARENTHESES'
+
+genericCall : 'IDENTIFIER'@function 'GENERIC_LT' typeArgList 'GENERIC_GT' 'L_PARENTHESES' 'R_PARENTHESES'
+            | 'IDENTIFIER'@function 'GENERIC_LT' typeArgList 'GENERIC_GT' 'L_PARENTHESES' argList 'R_PARENTHESES'
 
 funLiteral  : 'L_PARENTHESES' 'R_PARENTHESES' 'FAT_ARROW' block
             | 'L_PARENTHESES' funParamList 'R_PARENTHESES' 'FAT_ARROW' block
