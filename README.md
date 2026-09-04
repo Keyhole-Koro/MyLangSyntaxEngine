@@ -46,3 +46,15 @@ Use `--table` to print LR(1) item sets:
 Include `syntax_engine/semantic_actions.h` and call
 `syntax_parse_with_actions()` to build caller-defined AST values during LR
 reductions. See `docs/semantic-actions.md` for source-span and ownership rules.
+
+## MyLang generic tokens
+
+The bundled MyLang grammar accepts generic struct and function declarations,
+generic types, and generic calls. A caller must classify the outer angle
+brackets of a generic call as `GENERIC_LT` and `GENERIC_GT`; ordinary `LT` and
+`GT` remain relational operators. This keeps `max<i32>(a, b)` distinct from
+`a < b` without adding language-specific name resolution to the syntax engine.
+
+Callers may split an `RSH` token into `GT GT` while inside nested generic types.
+The grammar accepts both `RSH` and `GT GT` as a right-shift operator, so this
+normalization does not change the accepted expression syntax.

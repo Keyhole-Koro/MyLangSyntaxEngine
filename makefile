@@ -10,6 +10,7 @@ OBJ_DIR = $(BUILD_DIR)/obj
 BIN_DIR = $(BUILD_DIR)/bin
 TARGET = $(BIN_DIR)/output
 SEMANTIC_ACTION_TEST = $(BIN_DIR)/test_semantic_actions
+MYLANG_GRAMMAR_TEST = $(BIN_DIR)/test_mylang_grammar
 OBJ = $(patsubst src/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
 all: $(TARGET)
@@ -26,8 +27,13 @@ $(SEMANTIC_ACTION_TEST): $(LIB_SRC) tests/test_semantic_actions.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^
 
-test: $(SEMANTIC_ACTION_TEST)
+$(MYLANG_GRAMMAR_TEST): $(LIB_SRC) tests/test_mylang_grammar.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ $^
+
+test: $(SEMANTIC_ACTION_TEST) $(MYLANG_GRAMMAR_TEST)
 	./$(SEMANTIC_ACTION_TEST)
+	./$(MYLANG_GRAMMAR_TEST)
 
 clean:
 	rm -rf $(BUILD_DIR)

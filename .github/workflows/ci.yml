@@ -16,12 +16,23 @@ jobs:
         run: make -s build/bin/test_semantic_actions
       - name: Run semantic action tests
         run: ./build/bin/test_semantic_actions > semantic-action-test.log 2>&1
+      - name: Build MyLang grammar tests
+        run: make -s build/bin/test_mylang_grammar
+      - name: Run MyLang grammar tests
+        run: ./build/bin/test_mylang_grammar > mylang-grammar-test.log 2>&1
       - name: Upload semantic action diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semantic-action-test-log
           path: semantic-action-test.log
+          if-no-files-found: error
+      - name: Upload MyLang grammar diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mylang-grammar-test-log
+          path: mylang-grammar-test.log
           if-no-files-found: error
       - name: Smoke test CLI
         run: ./build/bin/output tests/fixtures/grammars/sample2.txt int id '=' id ';'
