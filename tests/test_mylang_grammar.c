@@ -42,29 +42,31 @@ int main(void) {
     CHECK(grammar != NULL, "MyLang grammar must load");
     SyntaxTable *table = syntax_build_lr1_table(grammar);
     CHECK(table != NULL, "MyLang grammar table must build");
+    CHECK(syntax_table_conflict_count(table) <= 2, "generic rules must not add parser conflicts");
 
     const char *generic_struct[] = {
-        "STRUCT", "IDENTIFIER", "LT", "IDENTIFIER", "COMMA", "IDENTIFIER", "GT",
+        "STRUCT", "IDENTIFIER", "GENERIC_LT", "IDENTIFIER", "COMMA", "IDENTIFIER", "GENERIC_GT",
         "L_BRACE", "IDENTIFIER", "IDENTIFIER", "SEMICOLON",
         "IDENTIFIER", "IDENTIFIER", "SEMICOLON", "R_BRACE", "SEMICOLON"
     };
     EXPECT_OK(table, "generic struct", generic_struct);
 
     const char *generic_function[] = {
-        "IDENTIFIER", "IDENTIFIER", "LT", "IDENTIFIER", "GT", "L_PARENTHESES",
+        "IDENTIFIER", "IDENTIFIER", "GENERIC_LT", "IDENTIFIER", "GENERIC_GT", "L_PARENTHESES",
         "IDENTIFIER", "IDENTIFIER", "R_PARENTHESES", "L_BRACE",
         "RETURN", "IDENTIFIER", "SEMICOLON", "R_BRACE"
     };
     EXPECT_OK(table, "generic function", generic_function);
 
     const char *generic_prototype[] = {
-        "IDENTIFIER", "IDENTIFIER", "LT", "IDENTIFIER", "GT", "L_PARENTHESES",
+        "IDENTIFIER", "IDENTIFIER", "GENERIC_LT", "IDENTIFIER", "GENERIC_GT", "L_PARENTHESES",
         "IDENTIFIER", "IDENTIFIER", "R_PARENTHESES", "SEMICOLON"
     };
     EXPECT_OK(table, "generic function prototype", generic_prototype);
 
     const char *nested_generic_type[] = {
-        "IDENTIFIER", "LT", "IDENTIFIER", "LT", "IDENTIFIER", "GT", "GT",
+        "IDENTIFIER", "GENERIC_LT", "IDENTIFIER", "GENERIC_LT", "IDENTIFIER",
+        "GENERIC_GT", "GENERIC_GT",
         "IDENTIFIER", "SEMICOLON"
     };
     EXPECT_OK(table, "nested generic type", nested_generic_type);
@@ -78,7 +80,7 @@ int main(void) {
 
     const char *nested_generic_call[] = {
         "I32", "IDENTIFIER", "L_PARENTHESES", "R_PARENTHESES", "L_BRACE", "RETURN",
-        "IDENTIFIER", "GENERIC_LT", "IDENTIFIER", "LT", "I32", "GT", "GENERIC_GT",
+        "IDENTIFIER", "GENERIC_LT", "IDENTIFIER", "GENERIC_LT", "I32", "GENERIC_GT", "GENERIC_GT",
         "L_PARENTHESES", "NUMBER", "R_PARENTHESES", "SEMICOLON", "R_BRACE"
     };
     EXPECT_OK(table, "nested generic call", nested_generic_call);
@@ -101,14 +103,8 @@ int main(void) {
     };
     EXPECT_OK(table, "right shift expression", shift_expression);
 
-    const char *split_shift_expression[] = {
-        "I32", "IDENTIFIER", "L_PARENTHESES", "R_PARENTHESES", "L_BRACE", "RETURN",
-        "IDENTIFIER", "GT", "GT", "NUMBER", "SEMICOLON", "R_BRACE"
-    };
-    EXPECT_OK(table, "split right shift expression", split_shift_expression);
-
     const char *trailing_type_param[] = {
-        "STRUCT", "IDENTIFIER", "LT", "IDENTIFIER", "COMMA", "GT",
+        "STRUCT", "IDENTIFIER", "GENERIC_LT", "IDENTIFIER", "COMMA", "GENERIC_GT",
         "L_BRACE", "R_BRACE", "SEMICOLON"
     };
     expect_status(

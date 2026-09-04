@@ -82,7 +82,7 @@ funcDef     : type 'IDENTIFIER'@function@decl(function) 'L_PARENTHESES' 'R_PAREN
             | type 'IDENTIFIER'@function@decl(function) typeParams 'L_PARENTHESES' 'R_PARENTHESES' block
             | type 'IDENTIFIER'@function@decl(function) typeParams 'L_PARENTHESES' paramList 'R_PARENTHESES' block
 
-typeParams  : 'LT' typeParamList 'GT'
+typeParams  : 'GENERIC_LT' typeParamList 'GENERIC_GT'
 
 typeParamList: typeParamList 'COMMA' 'IDENTIFIER'@type
             | 'IDENTIFIER'@type
@@ -191,7 +191,7 @@ baseType    : primitiveType
             | 'IDENTIFIER'@type
             | 'IDENTIFIER'@type typeArgs
 
-typeArgs    : 'LT' typeArgList 'GT'
+typeArgs    : 'GENERIC_LT' typeArgList 'GENERIC_GT'
 
 typeArgList : typeArgList 'COMMA' type
             | type
@@ -250,7 +250,6 @@ shiftExpr   : shiftExpr shiftOp addExpr
 
 shiftOp     : 'LSH'
             | 'RSH'
-            | 'GT' 'GT'
 
 addExpr     : addExpr addOp mulExpr
             | mulExpr
@@ -306,8 +305,8 @@ primary     : 'IDENTIFIER'@variable
             | funLiteral
             | 'L_PARENTHESES' expr 'R_PARENTHESES'
 
-genericCall : 'IDENTIFIER'@function 'GENERIC_LT' typeArgList 'GENERIC_GT' 'L_PARENTHESES' 'R_PARENTHESES'
-            | 'IDENTIFIER'@function 'GENERIC_LT' typeArgList 'GENERIC_GT' 'L_PARENTHESES' argList 'R_PARENTHESES'
+genericCall : 'IDENTIFIER'@function typeArgs 'L_PARENTHESES' 'R_PARENTHESES'
+            | 'IDENTIFIER'@function typeArgs 'L_PARENTHESES' argList 'R_PARENTHESES'
 
 funLiteral  : 'L_PARENTHESES' 'R_PARENTHESES' 'FAT_ARROW' block
             | 'L_PARENTHESES' funParamList 'R_PARENTHESES' 'FAT_ARROW' block
