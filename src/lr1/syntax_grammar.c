@@ -36,6 +36,14 @@ const char *lr1_label_name(const SyntaxGrammar *grammar, int label_id) {
     return grammar->labels[label_id - 1];
 }
 
+int syntax_label_id(const SyntaxGrammar *grammar, const char *name) {
+    if (!grammar || !name) return 0;
+    for (int i = 0; i < grammar->label_count; i++) {
+        if (strcmp(grammar->labels[i], name) == 0) return i + 1;
+    }
+    return 0;
+}
+
 static int add_symbol(SyntaxGrammar *grammar, const char *name, SymbolKind kind) {
     int found = lr1_find_symbol(grammar, name, kind);
     if (found >= 0) return found;
