@@ -65,6 +65,13 @@ typedef struct {
    grammar-declared string, or NULL for 0/none. */
 const char *syntax_label_name(const SyntaxTable *table, int label_id);
 
+/* Reverse of syntax_label_name(): the id a grammar's own @role/@decl(kind)
+   annotations already interned for this name, or 0 if the grammar never
+   uses it. Never interns a new one -- for a caller (a lexer-level token
+   preprocessing pass, say) that wants to assign a role the grammar already
+   defines without reaching into engine internals. */
+int syntax_label_id(const SyntaxGrammar *grammar, const char *name);
+
 /* Full analysis: fills out_roles (see above) and, if out_symbols is non-NULL,
    collects up to symbol_cap top-level declaration symbols (functions, structs,
    enums, typedefs, globals) into it, writing the count to *out_symbol_count.

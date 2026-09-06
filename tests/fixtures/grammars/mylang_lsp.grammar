@@ -68,6 +68,7 @@ enumItems   : enumItems 'COMMA' enumItem
 
 enumItem    : 'IDENTIFIER'@enumMember@decl(enumMember)
             | 'IDENTIFIER'@enumMember@decl(enumMember) 'ASSIGN' 'NUMBER'
+            | 'IDENTIFIER'@enumMember@decl(enumMember) 'L_PARENTHESES' type 'R_PARENTHESES'
 
 funcDecl    : funcDef
             | funcProto
